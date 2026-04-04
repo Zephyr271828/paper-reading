@@ -1,0 +1,7 @@
+assets/*.md
+logs/
+papers/*.md
+tags/*.md
+
+CLAUDE.md
+AGENTS.md
