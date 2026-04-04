@@ -7,7 +7,8 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENGINE="codex"
 TIMEOUT_SECONDS="${NEW_PAPER_TIMEOUT_SECONDS:-1800}"
-POLL_INTERVAL_SECONDS=2
+ARXIV_ID=""
+ARXIV_LOG_BASENAME=""
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -18,6 +19,48 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 : "${ARXIV_URL:?Usage: $0 [--codex|--claude] <arxiv_url>}"
+
+parse_arxiv_url() {
+  local arxiv_url="$1"
+  local url_no_fragment url_no_query path_kind arxiv_id
+
+  url_no_fragment="${arxiv_url%%#*}"
+  url_no_query="${url_no_fragment%%\?*}"
+
+  if [[ "$url_no_query" =~ ^https?://(www\.)?arxiv\.org/(abs|html|pdf)/(.*)$ ]]; then
+    path_kind="${BASH_REMATCH[2]}"
+    arxiv_id="${BASH_REMATCH[3]}"
+  else
+    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
+    echo "Expected https://arxiv.org/abs/<id>, https://arxiv.org/html/<id>, or https://arxiv.org/pdf/<id>.pdf." >&2
+    exit 1
+  fi
+
+  if [[ -z "$arxiv_id" || "$arxiv_id" == */ || "$arxiv_id" == *" "* ]]; then
+    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
+    exit 1
+  fi
+
+  if [[ "$path_kind" == "pdf" ]]; then
+    if [[ "$arxiv_id" != *.pdf ]]; then
+      echo "Error: Invalid arXiv PDF URL format: $arxiv_url" >&2
+      exit 1
+    fi
+    arxiv_id="${arxiv_id%.pdf}"
+  elif [[ "$arxiv_id" == *.pdf ]]; then
+    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
+    exit 1
+  fi
+
+  if [[ "$arxiv_id" =~ ^[0-9]{4}\.[0-9]{4,5}(v[0-9]+)?$ ]] || [[ "$arxiv_id" =~ ^[[:alnum:]-]+/[0-9]{7}(v[0-9]+)?$ ]]; then
+    ARXIV_ID="$arxiv_id"
+    ARXIV_LOG_BASENAME="${arxiv_id//\//_}"
+    return 0
+  fi
+
+  echo "Error: Invalid arXiv ID in URL: $arxiv_url" >&2
+  exit 1
+}
 
 case "$TIMEOUT_SECONDS" in
   ''|*[!0-9]*)
@@ -31,14 +74,18 @@ if (( TIMEOUT_SECONDS <= 0 )); then
   exit 1
 fi
 
+parse_arxiv_url "$ARXIV_URL"
+
 LOG_DIR="$REPO_DIR/logs/new_paper"
 mkdir -p "$LOG_DIR"
-TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="$LOG_DIR/${TIMESTAMP}.log"
-STATUS_FILE="$LOG_DIR/${TIMESTAMP}.status"
-START_MARKER="$LOG_DIR/${TIMESTAMP}.start"
-RUNNER_FILE="$LOG_DIR/${TIMESTAMP}.runner.sh"
-SESSION_NAME="new_paper_${ENGINE}_${TIMESTAMP}_$$"
+RUN_ID="$(date +%Y%m%d_%H%M%S)_$$"
+LOG_FILE="$LOG_DIR/${ARXIV_LOG_BASENAME}.log"
+STATUS_FILE="$LOG_DIR/${ARXIV_LOG_BASENAME}.${RUN_ID}.status"
+START_MARKER="$LOG_DIR/${ARXIV_LOG_BASENAME}.${RUN_ID}.start"
+RUNNER_FILE="$LOG_DIR/${ARXIV_LOG_BASENAME}.${RUN_ID}.runner.sh"
+RUN_LOG_MARKER="===== new_paper run ${RUN_ID} ====="
+SESSION_SAFE_ID="${ARXIV_LOG_BASENAME//[^[:alnum:]_.-]/_}"
+SESSION_NAME="new_paper_${ENGINE}_${SESSION_SAFE_ID}_${RUN_ID}_$$"
 
 cd "$REPO_DIR"
 touch "$START_MARKER"
@@ -69,7 +116,16 @@ RESULT_FIGURE=assets/<method>_fig.png
 Do not print the RESULT_ lines until the files exist on disk.
 "
 
-echo "Starting paper card generation for: $ARXIV_URL (engine: $ENGINE)" | tee "$LOG_FILE"
+if [[ -e "$LOG_FILE" ]]; then
+  echo "Warning: Log file already exists; appending to: $LOG_FILE" >&2
+fi
+
+{
+  printf '\n'
+  printf '%s\n' "$RUN_LOG_MARKER"
+  printf 'Started at: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
+  printf 'Starting paper card generation for: %s (engine: %s, arXiv ID: %s)\n' "$ARXIV_URL" "$ENGINE" "$ARXIV_ID"
+} | tee -a "$LOG_FILE"
 echo "Log: $LOG_FILE"
 echo "Status: $STATUS_FILE"
 
@@ -99,6 +155,8 @@ REPO_DIR=$(printf '%q' "$REPO_DIR")
 LOG_FILE=$(printf '%q' "$LOG_FILE")
 STATUS_FILE=$(printf '%q' "$STATUS_FILE")
 START_MARKER=$(printf '%q' "$START_MARKER")
+RUNNER_FILE=$(printf '%q' "$RUNNER_FILE")
+RUN_LOG_MARKER=$(printf '%q' "$RUN_LOG_MARKER")
 TIMEOUT_SECONDS=$(printf '%q' "$TIMEOUT_SECONDS")
 RUN_CMD=($RUN_CMD_LITERAL)
 
@@ -141,8 +199,14 @@ fi
 RESULT_PAPER_CARD=""
 RESULT_FIGURE=""
 if [[ -f "\$LOG_FILE" ]]; then
-  RESULT_PAPER_CARD="\$(awk -F= '/^RESULT_PAPER_CARD=/{print \$2}' "\$LOG_FILE" | tail -n 1 | tr -d '\r')"
-  RESULT_FIGURE="\$(awk -F= '/^RESULT_FIGURE=/{print \$2}' "\$LOG_FILE" | tail -n 1 | tr -d '\r')"
+  RESULT_PAPER_CARD="\$(awk -F= -v marker="\$RUN_LOG_MARKER" '
+    \$0 == marker { in_run=1; next }
+    in_run && /^RESULT_PAPER_CARD=/ { print \$2 }
+  ' "\$LOG_FILE" | tail -n 1 | tr -d '\r')"
+  RESULT_FIGURE="\$(awk -F= -v marker="\$RUN_LOG_MARKER" '
+    \$0 == marker { in_run=1; next }
+    in_run && /^RESULT_FIGURE=/ { print \$2 }
+  ' "\$LOG_FILE" | tail -n 1 | tr -d '\r')"
 fi
 
 if [[ -n "\$RESULT_PAPER_CARD" ]]; then
@@ -193,6 +257,7 @@ fi
 
 mv "\$STATUS_TMP" "\$STATUS_FILE"
 rm -f "\$TIMEOUT_MARKER"
+rm -f "\$RUNNER_FILE" "\$START_MARKER"
 EOF
 
 chmod +x "$RUNNER_FILE"
@@ -207,52 +272,5 @@ echo "List active sessions with:"
 echo "  tmux ls"
 echo "Follow progress with:"
 echo "  tail -f $LOG_FILE"
-
-cleanup() {
-  if [[ -f "$STATUS_FILE" ]]; then
-    rm -f "$RUNNER_FILE" "$START_MARKER"
-  fi
-}
-
-interrupt() {
-  echo
-  echo "Interrupted. The tmux session is still running: $SESSION_NAME" >&2
-  echo "Check progress with: tail -f $LOG_FILE" >&2
-  exit 130
-}
-
-trap interrupt INT TERM
-trap cleanup EXIT
-
-echo "Waiting for completion..."
-
-while [[ ! -f "$STATUS_FILE" ]]; do
-  if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-    sleep 1
-    if [[ ! -f "$STATUS_FILE" ]]; then
-      {
-        printf 'EXIT_CODE=%q\n' 1
-        printf 'TIMED_OUT=%q\n' 0
-        printf 'AGENT_EXIT_CODE=%q\n' 1
-        printf 'PAPER_CARD_PATH=%q\n' ""
-        printf 'FIGURE_PATH=%q\n' ""
-        printf 'MESSAGE=%q\n' "tmux session exited before writing a final status."
-      } > "$STATUS_FILE"
-    fi
-    break
-  fi
-  sleep "$POLL_INTERVAL_SECONDS"
-done
-
-# shellcheck disable=SC1090
-source "$STATUS_FILE"
-
-echo "$MESSAGE"
-if [[ -n "$PAPER_CARD_PATH" ]]; then
-  echo "Paper card: $PAPER_CARD_PATH"
-fi
-if [[ -n "$FIGURE_PATH" ]]; then
-  echo "Figure: $FIGURE_PATH"
-fi
-
-exit "$EXIT_CODE"
+echo "Check final status with:"
+echo "  cat $STATUS_FILE"

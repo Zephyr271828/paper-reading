@@ -38,7 +38,7 @@ Download [Obsidian](https://obsidian.md), then: **Open folder as vault** → sel
 ./new_paper.sh --claude https://arxiv.org/abs/XXXX.XXXXX
 ```
 
-The script starts a detached `tmux` session and streams output to `logs/new_paper/<timestamp>.log`. It then waits for the run to finish and exits non-zero if the agent times out, exits unsuccessfully, or never creates a paper card in `papers/`. The detached session still keeps the run alive if you close the terminal or interrupt the launcher. Reattach with `tmux attach -t <session_name>` or inspect progress with `tail -f logs/new_paper/<timestamp>.log`.
+The script validates the arXiv URL first, then starts a detached `tmux` session and streams output to `logs/new_paper/<arxiv_id>.log`. Reattach with `tmux attach -t <session_name>`, inspect progress with `tail -f logs/new_paper/<arxiv_id>.log`, or read the final result from the printed `logs/new_paper/<arxiv_id>.<run_id>.status` path. If the log file already exists for that arXiv ID, the script prints a warning and appends to the existing log.
 
 Set `NEW_PAPER_TIMEOUT_SECONDS` to override the default 30 minute timeout.
 

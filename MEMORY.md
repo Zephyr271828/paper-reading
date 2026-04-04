@@ -77,5 +77,5 @@ Current tags:
 
 ## Automation Notes
 
-- `new_paper.sh` launches the selected agent inside a detached `tmux` session so the run survives terminal shutdown, then waits for completion and returns a non-zero exit if the run times out, the agent fails, or no paper card is created.
-- Each run logs to `logs/new_paper/<timestamp>.log`. Watch progress with `tail -f` or reattach to the printed `tmux` session name. Override the default 30 minute timeout with `NEW_PAPER_TIMEOUT_SECONDS`.
+- `new_paper.sh` launches the selected agent inside a detached `tmux` session so the run survives terminal shutdown and returns immediately.
+- `new_paper.sh` validates the arXiv URL first, writes or appends logs at `logs/new_paper/<arxiv_id>.log`, and writes a final status file at `logs/new_paper/<arxiv_id>.<run_id>.status`. Watch progress with `tail -f`, inspect the status file, or reattach to the printed `tmux` session name. Override the default 30 minute timeout with `NEW_PAPER_TIMEOUT_SECONDS`.
