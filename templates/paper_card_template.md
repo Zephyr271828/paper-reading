@@ -11,6 +11,11 @@ year: 20XX
 > **Links:** [arXiv](https://arxiv.org/abs/XXXX.XXXXX) | [GitHub]() | [Website]()
 > **Tags:** #TAG1 #TAG2
 
+<!-- Use existing canonical tags when they fit.
+     If this paper belongs to a coherent, recurring area that is not covered well,
+     proactively create a new canonical tag and a matching tags/NEWTAG.md index file
+     instead of forcing a poor tag choice. -->
+
 ---
 
 ## Methodology

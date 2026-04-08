@@ -1,4 +1,5 @@
 assets/*.md
+assets/*.png
 logs/
 papers/*.md
 tags/*.md
