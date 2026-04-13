@@ -1,9 +1,12 @@
 ---
-tags: [TAG1, TAG2]
-arxiv: "https://arxiv.org/abs/XXXX.XXXXX"
+tags:
+  - TAG1
+  - TAG2
+arxiv: https://arxiv.org/abs/XXXX.XXXXX
 github: ""
 website: ""
 year: 20XX
+read: false
 ---
 
 # METHOD_NAME

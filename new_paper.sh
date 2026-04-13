@@ -93,6 +93,8 @@ touch "$START_MARKER"
 PROMPT="
 Generate a paper card for this paper: $ARXIV_URL
 
+IMPORTANT: You are running in fully automated non-interactive mode. All tool permissions are pre-approved. Do NOT ask for permission or wait for approval — just call the tools directly (Read, Write, Edit, Glob, Grep, Bash, WebFetch, etc.). Proceed through every step without stopping.
+
 Follow the 6-step workflow in MEMORY.md exactly:
 
 1. Fetch the arXiv page (and project website if one exists) to determine the method name, GitHub repo URL, and project website URL.
@@ -120,6 +122,9 @@ if [[ -e "$LOG_FILE" ]]; then
   echo "Warning: Log file already exists; appending to: $LOG_FILE" >&2
 fi
 
+CLAUDE_MODEL="claude-sonnet-4-6"
+CLAUDE_EFFORT="medium"
+
 {
   printf '\n'
   printf '%s\n' "$RUN_LOG_MARKER"
@@ -133,9 +138,6 @@ if ! command -v tmux >/dev/null 2>&1; then
   echo "Error: tmux is required so the run survives terminal shutdown." >&2
   exit 1
 fi
-
-CLAUDE_MODEL="claude-sonnet-4-6"
-CLAUDE_EFFORT="medium"
 
 if [[ "$ENGINE" == "codex" ]]; then
   RUN_CMD=(codex exec --full-auto "$PROMPT")
