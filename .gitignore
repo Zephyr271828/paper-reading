@@ -1,8 +1,5 @@
 assets/*.md
-assets/*.png
 logs/
-papers/*.md
-tags/*.md
 
 CLAUDE.md
 AGENTS.md
