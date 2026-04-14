@@ -16,6 +16,15 @@ Do not create or update per-tag note files under `tags/`. Obsidian's native tag 
 | `MLSYS` | ML systems (memory, kernels, scheduling) |
 | `VISION` | Computer vision / visual representation learning / vision foundation models |
 | `PRUNING` | Pruning and sparsity |
+| `DEEP_LEARNING` | Deep learning theory and optimization |
+| `OPT` | Optimization algorithms and techniques |
+| `NLP` | Natural language processing |
+| `THEORY` | Theoretical analysis of models, algorithms, or phenomena |
+| `QUANT` | Quantization techniques for model compression and acceleration |
+| `GRAPHICS` | Computer graphics techniques applied to machine learning, such as differentiable rendering or neural rendering |
+| `ROBOTICS` | Robotics applications of machine learning, including control, perception, and simulation |
+| `INFO_THEORY` | Information-theoretic analysis of models, algorithms, or phenomena |
+| `NEUROSCIENCE` | Neuroscience-inspired machine learning models or algorithms, or analysis of biological neural networks |
 
 ## Adding New Tags
 
