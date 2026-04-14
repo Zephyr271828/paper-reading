@@ -6,7 +6,7 @@ arxiv: https://arxiv.org/abs/2507.18578
 github: https://github.com/Feng-Hong/WINO-DLLM
 website: ""
 year: 2025
-read: false
+read: true
 ---
 
 # WINO
@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/wino_fig.png]]
+![](../assets/wino_fig.png)
 
 WINO (Wide-In, Narrow-Out) is a training-free decoding algorithm for Diffusion Large Language Models (DLLMs) that makes the decoding process **revokable**. Standard DLLM decoding is irreversible: once a token is unmasked, it remains fixed and early errors accumulate. WINO introduces a parallel **Draft-and-Verify** mechanism that allows previously decoded tokens to be re-masked and refined.
 
@@ -150,7 +150,7 @@ Verification is essential: without it, draft-only decoding degrades accuracy at 
 
 ## Related Papers
 
-- [[mdlm]]
-- [[rcd]]
-- [[dflash]]
-- [[dmax]]
+- [mdlm](mdlm.md)
+- [rcd](rcd.md)
+- [dflash](dflash.md)
+- [dmax](dmax.md)

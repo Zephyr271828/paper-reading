@@ -16,7 +16,7 @@ read: false
 
 ## Methodology
 
-![[assets/rcd_fig.png]]
+![](../assets/rcd_fig.png)
 
 Residual Context Diffusion (RCD) keeps the standard blockwise diffusion decoding loop, but it no longer throws away the probability mass of remasked tokens. Instead, it converts those discarded distributions into soft residual context and injects them into the next denoising step.
 
@@ -153,5 +153,5 @@ Across confidence-threshold sweeps from `0.5` to `1.0`, the paper reports that R
 
 ## Related Papers
 
-- [[sdar]]
-- [[wino]]
+- [sdar](sdar.md)
+- [wino](wino.md)

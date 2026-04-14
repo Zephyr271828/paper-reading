@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/mamba_fig.png]]
+![](../assets/mamba_fig.png)
 
 Mamba is a selective state space model (SSM) that addresses the core limitation of prior SSMs: their linear time-invariance (LTI) forces fixed transition dynamics regardless of input content. Mamba introduces a **selection mechanism** that makes SSM parameters input-dependent, combined with a **hardware-aware parallel scan algorithm** that keeps wall-clock costs competitive with convolution-based LTI models.
 
@@ -179,4 +179,4 @@ Induction Heads: Mamba (74K params) achieves perfect accuracy at all test length
 
 ## Related Papers
 
-- [[flashattn]]
+- [flashattn](flashattn.md)

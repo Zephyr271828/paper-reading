@@ -16,7 +16,7 @@ read: false
 
 ## Methodology
 
-![[assets/mdlm_fig.png]]
+![](../assets/mdlm_fig.png)
 
 MDLM unifies masked language modeling (MLM) with discrete diffusion by deriving a Rao-Blackwellized ELBO that reduces to a weighted mixture of MLM losses. The key contributions are (1) the **SUBS parameterization** which enforces zero masking probabilities and carry-over unmasking in the reverse process, and (2) simplification of the training objective to a stable, closed-form expression without requiring full transition matrix computations.
 
@@ -144,6 +144,6 @@ Continued MDLM pre-training (1% of total tokens) does not degrade downstream NLU
 
 ## Related Papers
 
-- [[sdar]]
-- [[rcd]]
-- [[wino]]
+- [sdar](sdar.md)
+- [rcd](rcd.md)
+- [wino](wino.md)

@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/sdar_fig.png]]
+![](../assets/sdar_fig.png)
 
 SDAR converts a pretrained autoregressive (AR) model into a hybrid blockwise diffusion model via lightweight continued training (~30–50B tokens). Sequences are partitioned into $K$ non-overlapping blocks $b_1, b_2, \ldots, b_K$ of size $B$. Inter-block dependencies are handled autoregressively; intra-block tokens are decoded in parallel via masked diffusion.
 
@@ -115,6 +115,6 @@ Smaller blocks yield higher throughput (more AR steps, less diffusion parallelis
 
 ## Related Papers
 
-- [[mdlm]]
-- [[rcd]]
-- [[dmax]]
+- [mdlm](mdlm.md)
+- [rcd](rcd.md)
+- [dmax](dmax.md)

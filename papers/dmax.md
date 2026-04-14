@@ -18,7 +18,7 @@ read: true
 
 ## Methodology
 
-![[assets/dmax_fig.png]]
+![](../assets/dmax_fig.png)
 
 DMax enables aggressive parallel decoding for discrete diffusion language models (dLLMs) by addressing the train-inference gap through two components: **On-Policy Uniform Training (OPUT)** and **Soft Parallel Decoding (SPD)**.
 
@@ -109,5 +109,5 @@ Consistency is the primary convergence signal; confidence acts as a secondary sa
 
 ## Related Papers
 
-- [[mdlm]]
-- [[sdar]]
+- [mdlm](mdlm.md)
+- [sdar](sdar.md)

@@ -19,7 +19,7 @@ read: false
 
 ## Methodology
 
-![[assets/dsv3_fig.png]]
+![](../assets/dsv3_fig.png)
 
 DeepSeek-V3 is a 671B-parameter Mixture-of-Experts (MoE) language model with 37B parameters activated per token. Three key architectural innovations: (1) Multi-head Latent Attention (MLA) for KV-cache compression, (2) auxiliary-loss-free load balancing for DeepSeekMoE, and (3) Multi-Token Prediction (MTP) as an additional training objective.
 

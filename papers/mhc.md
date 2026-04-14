@@ -16,7 +16,7 @@ read: false
 
 ## Methodology
 
-![[assets/mhc_fig.png]]
+![](../assets/mhc_fig.png)
 
 mHC (Manifold-Constrained Hyper-Connections) extends Hyper-Connections (HC) by constraining the residual mapping matrix to the **Birkhoff polytope** (doubly stochastic matrices), restoring the identity-mapping property that HC violates and eliminating training instability.
 
@@ -159,5 +159,5 @@ The residual mapping $\mathcal{H}_l^{\text{res}}$ contributes the most; adding p
 
 ## Related Papers
 
-- [[attnres]]
-- [[deepseekv3]]
+- [attnres](attnres.md)
+- [dsv3](dsv3.md)

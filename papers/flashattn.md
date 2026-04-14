@@ -17,7 +17,7 @@ read: false
 
 ## Methodology
 
-![[assets/flashattn_fig.png]]
+![](../assets/flashattn_fig.png)
 
 FlashAttention is an **IO-aware exact attention algorithm** that computes $\text{softmax}(QK^\top / \sqrt{d})V$ without materializing the full $N \times N$ attention matrix in GPU HBM, reducing memory access from $\Theta(Nd + N^2)$ to $\Theta(N^2 d^2 M^{-1})$ where $M$ is the SRAM size.
 
@@ -164,4 +164,4 @@ FlashAttention memory scales **linearly** in $N$ vs. quadratic for standard atte
 
 ## Related Papers
 
-- [[dflash]]
+- [dflash](dflash.md)

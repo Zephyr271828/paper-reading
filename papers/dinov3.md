@@ -17,7 +17,7 @@ read: false
 
 ## Methodology
 
-![[assets/dinov3_fig.png]]
+![](../assets/dinov3_fig.png)
 
 ### Overview
 

@@ -17,7 +17,7 @@ read: false
 
 ## Methodology
 
-![[assets/attnres_fig.png]]
+![](../assets/attnres_fig.png)
 
 Standard PreNorm residual connections accumulate all layer outputs with **fixed unit weights**, causing uncontrolled hidden-state magnitude growth with depth (PreNorm dilution). AttnRes replaces this fixed accumulation with **softmax attention over preceding layer outputs**, allowing each layer to selectively aggregate earlier representations with learned, input-dependent weights.
 
@@ -164,20 +164,20 @@ AttnRes matches or outperforms baseline on all 15 benchmarks. Largest gains: GPQ
 
 ### Ablations (436M model, val loss)
 
-| Method / Variant | Val Loss |
-|------------------|----------|
-| Baseline (PreNorm) | 1.766 |
-| DenseFormer (fixed weights) | 1.767 |
-| SWA (window $W=8$) | 1.764 |
-| mHC | 1.747 |
-| Block AttnRes ($S=4$, $N\approx 8$) | 1.746 |
-| Full AttnRes | **1.737** |
-| Full AttnRes + input-dependent query | 1.731 |
-| Full AttnRes, input-independent scalars | 1.749 |
-| Full AttnRes, sigmoid instead of softmax | 1.741 |
-| Full AttnRes, multihead ($H=16$) | 1.752 |
-| Full AttnRes, no RMSNorm on keys | 1.743 |
-| Block AttnRes, no RMSNorm on keys | 1.750 |
+| Method / Variant                         | Val Loss  |
+| ---------------------------------------- | --------- |
+| Baseline (PreNorm)                       | 1.766     |
+| DenseFormer (fixed weights)              | 1.767     |
+| SWA (window $W=8$)                       | 1.764     |
+| mHC                                      | 1.747     |
+| Block AttnRes ($S=4$, $N\approx 8$)      | 1.746     |
+| Full AttnRes                             | **1.737** |
+| Full AttnRes + input-dependent query     | 1.731     |
+| Full AttnRes, input-independent scalars  | 1.749     |
+| Full AttnRes, sigmoid instead of softmax | 1.741     |
+| Full AttnRes, multihead ($H=16$)         | 1.752     |
+| Full AttnRes, no RMSNorm on keys         | 1.743     |
+| Block AttnRes, no RMSNorm on keys        | 1.750     |
 
 ### Training Dynamics
 
@@ -189,4 +189,4 @@ AttnRes matches or outperforms baseline on all 15 benchmarks. Largest gains: GPQ
 
 ## Related Papers
 
-- [[mhc]]
+- [mhc](mhc.md)

@@ -25,7 +25,7 @@ read: false
 
 <!-- Prefer the official teaser / methodology figure. If needed, use a clean crop of the original paper figure.
      Do not use synthetic summary screenshots or redrawn figures. -->
-![[assets/method_name_fig.png]]
+![](../assets/method_name_fig.png)
 
 <!-- Core idea + concrete algorithmic steps sufficient for reproduction.
      Use LaTeX for all math: inline $x$ or block $$\mathcal{L} = \ldots$$ -->
@@ -65,4 +65,4 @@ read: false
 ## Related Papers
 
 <!-- Omit this entire section if there are no related local papers.
-     If included, list only bare wiki-links, one per bullet, with no descriptions. -->
+     If included, list only bare Markdown links like - [method](method.md), one per bullet, with no descriptions. -->

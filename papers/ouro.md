@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/ouro_fig.png]]
+![](../assets/ouro_fig.png)
 
 Ouro is a family of **Looped Language Models (LoopLM)** that replace depth with recurrence via weight-tied layers. A single $L$-layer transformer block is applied $T$ recurrent steps; step $t=1$ recovers the standard non-looped model:
 

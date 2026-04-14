@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/eagle3_fig.png]]
+![](../assets/eagle3_fig.png)
 
 EAGLE-3 is a speculative decoding framework for autoregressive LLMs that addresses the data-scaling wall in EAGLE/EAGLE-2: adding more training data yields diminishing speedup gains because the draft model must predict *features* (target model's hidden states), constraining expressiveness.
 
@@ -128,6 +128,6 @@ EAGLE-3 achieves ~1.4× improvement over EAGLE-2 across all models.
 
 ## Related Papers
 
-- [[dflash]]
-- [[rcd]]
-- [[dmax]]
+- [dflash](dflash.md)
+- [rcd](rcd.md)
+- [dmax](dmax.md)

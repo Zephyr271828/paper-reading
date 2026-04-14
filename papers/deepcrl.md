@@ -16,7 +16,7 @@ read: false
 
 ## Methodology
 
-![[assets/deepcrl_fig.png]]
+![](../assets/deepcrl_fig.png)
 
 The paper shows that scaling network **depth** (up to 1024 layers) in **Contrastive RL (CRL)** substantially improves goal-conditioned performance, while the same scaling applied to temporal-difference methods (SAC, TD3+HER) yields zero or negative gains.
 

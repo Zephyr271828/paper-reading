@@ -20,7 +20,7 @@ read: false
 
 ## Methodology
 
-![[assets/turboquant_fig.png]]
+![](../assets/turboquant_fig.png)
 
 TurboQuant is a data-oblivious online vector quantization algorithm that achieves near-optimal distortion rates for both MSE and inner product objectives. The core idea: apply a random rotation to concentrate coordinate magnitudes, then apply optimal scalar quantizers per coordinate independently.
 

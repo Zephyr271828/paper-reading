@@ -18,7 +18,7 @@ read: false
 
 ## Methodology
 
-![[assets/vero_fig.png]]
+![](../assets/vero_fig.png)
 
 Vero is a single-stage, fully open RL recipe for training vision-language models (VLMs) across diverse visual reasoning tasks. The key ingredients are:
 
@@ -119,4 +119,4 @@ Single-task vs. multi-task training: training exclusively on one category causes
 
 ## Related Papers
 
-- [[deepcrl]]
+- [deepcrl](deepcrl.md)

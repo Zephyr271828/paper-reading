@@ -16,7 +16,7 @@ read: false
 
 ## Methodology
 
-![[assets/dflash_fig.png]]
+![](../assets/dflash_fig.png)
 
 DFlash replaces the autoregressive draft model in speculative decoding with a **block diffusion** model that generates $\gamma$ draft tokens in a single forward pass. A lightweight draft network conditions on frozen target-model hidden states injected via KV-cache, making drafts high-quality without costly autoregressive rollout.
 
@@ -108,5 +108,5 @@ Speedup as wall-clock / token-throughput tau:
 
 ## Related Papers
 
-- [[eagle3]]
-- [[mdlm]]
+- [eagle3](eagle3.md)
+- [mdlm](mdlm.md)
