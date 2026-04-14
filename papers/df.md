@@ -4,14 +4,14 @@ tags:
   - ROBOTICS
   - DEEP_LEARNING
   - THEORY
-arxiv: "https://arxiv.org/abs/2407.01392"
-github: "https://github.com/buoyancy99/diffusion-forcing"
-website: "https://boyuan.space/diffusion-forcing"
+arxiv: https://arxiv.org/abs/2407.01392
+github: https://github.com/buoyancy99/diffusion-forcing
+website: https://boyuan.space/diffusion-forcing
 year: 2024
-read: false
+read: true
 ---
 
-# Diffusion Forcing (DF)
+# Diffusion Forcing: Next-token Prediction Meets Full-Sequence Diffusion
 
 > **Links:** [arXiv](https://arxiv.org/abs/2407.01392) | [GitHub](https://github.com/buoyancy99/diffusion-forcing) | [Website](https://boyuan.space/diffusion-forcing)
 > **Tags:** #DLM #ROBOTICS #DEEP_LEARNING #THEORY

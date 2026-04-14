@@ -9,7 +9,7 @@ year: 2023
 read: false
 ---
 
-# Mamba
+# Mamba: Linear-Time Sequence Modeling with Selective State Spaces
 
 > **Links:** [arXiv](https://arxiv.org/abs/2312.00752) | [GitHub](https://github.com/state-spaces/mamba)
 > **Tags:** #MLSYS #NLP

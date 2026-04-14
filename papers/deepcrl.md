@@ -7,7 +7,7 @@ year: 2025
 read: false
 ---
 
-# Deep CRL (Scaling Contrastive RL)
+# 1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities
 
 > **Links:** [arXiv](https://arxiv.org/abs/2503.14858) | [GitHub](https://github.com/wang-kevin3290/scaling-crl) | [Website](https://wang-kevin3290.github.io/scaling-crl/)
 > **Tags:** #RL #DEEP_LEARNING

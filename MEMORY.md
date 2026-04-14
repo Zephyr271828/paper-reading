@@ -21,6 +21,9 @@ templates/     ← paper_card_template.md
 ### Naming Convention
 Name the file after the **method abbreviation** (not the paper title abbreviation). Examples: `wino.md`, `llada.md`, `rcd.md`, `dflash.md`. Use lowercase. Place in `papers/`.
 
+### Title Line
+The H1 title line inside the card (`# ...`) must be the **paper's original title** exactly as it appears on arXiv (including any subtitle after a colon), not the method abbreviation. The method abbreviation is only used for the filename and cross-references. Example: filename `wino.md`, H1 `# Wide-In, Narrow-Out: Revokable Decoding for Efficient and Effective DLLMs`.
+
 ### Workflow for each new paper
 
 1. **Retrieve metadata** — find the arXiv ID, GitHub repo, and project website. Put all three links at the top of the card even if some are missing.

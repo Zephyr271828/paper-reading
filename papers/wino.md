@@ -9,7 +9,7 @@ year: 2025
 read: true
 ---
 
-# WINO
+# Wide-In, Narrow-Out: Revokable Decoding for Efficient and Effective DLLMs
 
 > **Links:** [arXiv](https://arxiv.org/abs/2507.18578) | [GitHub](https://github.com/Feng-Hong/WINO-DLLM)
 > **Tags:** #DLM #SPEC_DECODING

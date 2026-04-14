@@ -8,7 +8,7 @@ year: 2026
 read: false
 ---
 
-# AttnRes
+# Attention Residuals
 
 > **Links:** [arXiv](https://arxiv.org/abs/2603.15031) | [GitHub](https://github.com/MoonshotAI/Attention-Residuals) | [Website]()
 > **Tags:** #DEEP_LEARNING

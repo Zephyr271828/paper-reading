@@ -11,7 +11,7 @@ year: 2025
 read: false
 ---
 
-# TurboQuant
+# TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate
 
 > **Links:** [arXiv](https://arxiv.org/abs/2504.19874)
 > **Tags:** #QUANT #MLSYS #THEORY #INFO_THEORY

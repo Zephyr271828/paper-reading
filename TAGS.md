@@ -25,6 +25,8 @@ Do not create or update per-tag note files under `tags/`. Obsidian's native tag 
 | `ROBOTICS` | Robotics applications of machine learning, including control, perception, and simulation |
 | `INFO_THEORY` | Information-theoretic analysis of models, algorithms, or phenomena |
 | `NEUROSCIENCE` | Neuroscience-inspired machine learning models or algorithms, or analysis of biological neural networks |
+| `REASONING` | Reasoning capabilities of models, including logical reasoning, commonsense reasoning, or multi-hop reasoning |
+| `TTT` | Test Time Training techniques for improving model performance on specific tasks or domains |
 
 ## Adding New Tags
 

@@ -9,7 +9,7 @@ year: 2025
 read: false
 ---
 
-# Vero
+# Vero: An Open RL Recipe for General Visual Reasoning
 
 > **Links:** [arXiv](https://arxiv.org/abs/2604.04917) | [GitHub](https://github.com/zlab-princeton/vero) | [Website](https://vero-reasoning.github.io/)
 > **Tags:** #RL #VISION

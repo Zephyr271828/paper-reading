@@ -9,7 +9,7 @@ year: 2026
 read: true
 ---
 
-# DMax
+# DMax: Aggressive Parallel Decoding for dLLMs
 
 > **Links:** [arXiv](https://arxiv.org/abs/2604.08302) | [GitHub](https://github.com/czg1225/DMax)
 > **Tags:** #DLM #SPEC_DECODING

@@ -7,7 +7,7 @@ year: 2025
 read: false
 ---
 
-# mHC
+# mHC: Manifold-Constrained Hyper-Connections
 
 > **Links:** [arXiv](https://arxiv.org/abs/2512.24880) | [GitHub]() | [Website]()
 > **Tags:** #DEEP_LEARNING

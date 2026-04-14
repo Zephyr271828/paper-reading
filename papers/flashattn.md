@@ -8,7 +8,7 @@ year: 2022
 read: false
 ---
 
-# FlashAttention
+# FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness
 
 > **Links:** [arXiv](https://arxiv.org/abs/2205.14135) | [GitHub](https://github.com/Dao-AILab/flash-attention)
 > **Tags:** #MLSYS

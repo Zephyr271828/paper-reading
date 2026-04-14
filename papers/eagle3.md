@@ -9,7 +9,7 @@ year: 2025
 read: false
 ---
 
-# EAGLE-3
+# EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test
 
 > **Links:** [arXiv](https://arxiv.org/abs/2503.01840) | [GitHub](https://github.com/SafeAILab/EAGLE)
 > **Tags:** #SPEC_DECODING #MLSYS

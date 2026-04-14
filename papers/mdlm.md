@@ -7,7 +7,7 @@ year: 2024
 read: false
 ---
 
-# MDLM
+# Simple and Effective Masked Diffusion Language Models
 
 > **Links:** [arXiv](https://arxiv.org/abs/2406.07524) | [GitHub](https://github.com/kuleshov-group/mdlm) | [Website](https://s-sahoo.com/mdlm)
 > **Tags:** #DLM

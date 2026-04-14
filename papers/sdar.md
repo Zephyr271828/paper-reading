@@ -2,14 +2,14 @@
 tags:
   - DLM
   - SPEC_DECODING
-arxiv: "https://arxiv.org/abs/2510.06303"
-github: "https://github.com/JetAstra/SDAR"
+arxiv: https://arxiv.org/abs/2510.06303
+github: https://github.com/JetAstra/SDAR
 website: ""
 year: 2025
-read: false
+read: true
 ---
 
-# SDAR
+# SDAR: A Synergistic Diffusion-AutoRegression Paradigm for Scalable Sequence Generation
 
 > **Links:** [arXiv](https://arxiv.org/abs/2510.06303) | [GitHub](https://github.com/JetAstra/SDAR)
 > **Tags:** #DLM #SPEC_DECODING

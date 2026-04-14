@@ -1,13 +1,16 @@
 ---
-tags: [SPEC_DECODING, DLM, MLSYS]
-arxiv: "https://arxiv.org/abs/2602.06036"
-github: "https://github.com/z-lab/dflash"
-website: "https://z-lab.ai/projects/dflash"
+tags:
+  - SPEC_DECODING
+  - DLM
+  - MLSYS
+arxiv: https://arxiv.org/abs/2602.06036
+github: https://github.com/z-lab/dflash
+website: https://z-lab.ai/projects/dflash
 year: 2026
-read: false
+read: true
 ---
 
-# DFlash
+# DFlash: Block Diffusion for Flash Speculative Decoding
 
 > **Links:** [arXiv](https://arxiv.org/abs/2602.06036) | [GitHub](https://github.com/z-lab/dflash) | [Website](https://z-lab.ai/projects/dflash)
 > **Tags:** #SPEC_DECODING #DLM #MLSYS

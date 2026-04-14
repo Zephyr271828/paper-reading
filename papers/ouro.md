@@ -9,7 +9,7 @@ year: 2025
 read: false
 ---
 
-# Ouro
+# Scaling Latent Reasoning via Looped Language Models
 
 > **Links:** [arXiv](https://arxiv.org/abs/2510.25741) | [Website](http://ouro-llm.github.io)
 > **Tags:** #NLP #DEEP_LEARNING

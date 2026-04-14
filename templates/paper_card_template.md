@@ -9,7 +9,7 @@ year: 20XX
 read: false
 ---
 
-# METHOD_NAME
+# Paper Original Title (exactly as on arXiv, including subtitle)
 
 > **Links:** [arXiv](https://arxiv.org/abs/XXXX.XXXXX) | [GitHub]() | [Website]()
 > **Tags:** #TAG1 #TAG2

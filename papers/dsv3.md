@@ -10,7 +10,7 @@ year: 2024
 read: false
 ---
 
-# DeepSeek-V3
+# DeepSeek-V3 Technical Report
 
 > **Links:** [arXiv](https://arxiv.org/abs/2412.19437) | [GitHub](https://github.com/deepseek-ai/DeepSeek-V3)
 > **Tags:** #MLSYS #SPEC_DECODING #RL

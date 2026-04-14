@@ -7,7 +7,7 @@ year: 2026
 read: false
 ---
 
-# RCD
+# Residual Context Diffusion Language Models
 
 > **Links:** [arXiv](https://arxiv.org/abs/2601.22954) | [GitHub](https://github.com/yuezhouhu/residual-context-diffusion) | [Website](https://yuezhouhu.github.io/projects/residual-context-diffusion/)
 > **Tags:** #DLM #SPEC_DECODING
