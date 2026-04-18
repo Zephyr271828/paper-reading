@@ -41,11 +41,11 @@ When $K = L$ (one block = full sequence), BDLM reduces to classical MDLM.
 
 Converts an AR checkpoint into a full MDLM via three coordinated phases:
 
-| Phase | Block Size $K$ | Attention | Purpose |
-|-------|---------------|-----------|---------|
-| Warmup | $1 \to 4 \to 32 \to 64 \to 4096$ | Bidirectional within block, causal across | Gradually expand masked receptive field |
-| Stable | 4096 (full sequence) | Fully bidirectional | Large-scale MDLM training |
-| Decay | $4096 \to 32$ | Block-causal | Distill into efficient blockwise structure for fast inference |
+| Phase  | Block Size $K$                   | Attention                                 | Purpose                                                       |
+| ------ | -------------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| Warmup | $1 \to 4 \to 32 \to 64 \to 4096$ | Bidirectional within block, causal across | Gradually expand masked receptive field                       |
+| Stable | 4096 (full sequence)             | Fully bidirectional                       | Large-scale MDLM training                                     |
+| Decay  | $4096 \to 32$                    | Block-causal                              | Distill into efficient blockwise structure for fast inference |
 
 A **document-level attention mask** prevents cross-document attention leakage during bidirectional training on packed sequences.
 
