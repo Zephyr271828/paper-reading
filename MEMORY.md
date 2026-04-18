@@ -79,3 +79,4 @@ Tags live in two places:
 
 - `new_paper.sh` launches the selected agent inside a detached `tmux` session so the run survives terminal shutdown and returns immediately.
 - `new_paper.sh` validates the arXiv URL first, writes or appends logs at `logs/new_paper/<arxiv_id>.log`, and writes a final status file at `logs/new_paper/<arxiv_id>.status`. Watch progress with `tail -f`, inspect the status file, or reattach to the printed `tmux` session name. Override the default 30 minute timeout with `NEW_PAPER_TIMEOUT_SECONDS`.
+- **When the user asks to add a new paper (typically with an arXiv URL), run `./new_paper.sh <url>` from the repo root rather than doing the work inline.** The script is the canonical entrypoint — it handles logging, timeouts, and the full paper-card workflow. Only write the card inline if the user explicitly opts out of the script.

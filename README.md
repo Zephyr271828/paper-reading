@@ -60,3 +60,11 @@ chmod +x ./remote_control.sh
 ```
 
 The script launches `claude remote-control` in a detached tmux session and prints a `claude.ai/code?environment=...` URL. Open it on your phone (or scan the QR by attaching with `tmux attach -t claude-rc`). Stop with `tmux kill-session -t claude-rc`. Requires a Pro/Max/Team plan; the Mac must stay awake.
+
+## Adding papers from your phone
+
+Once the remote-control session is running (see above), just tell Claude in the phone session:
+
+> Add a paper: https://arxiv.org/abs/XXXX.XXXXX
+
+Claude runs `./new_paper.sh` on your Mac, which writes the card and figure locally. iCloud syncs the result back to your phone's Obsidian app within seconds.

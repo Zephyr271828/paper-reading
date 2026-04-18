@@ -7,7 +7,7 @@ arxiv: https://arxiv.org/abs/2604.11035
 github: https://github.com/Introspective-Diffusion/I-DLM
 website: https://introspective-diffusion.github.io
 year: 2025
-read: false
+read: true
 ---
 
 # Introspective Diffusion Language Models
