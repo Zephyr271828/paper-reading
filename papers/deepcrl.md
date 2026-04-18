@@ -30,6 +30,12 @@ where $f_{\phi,\psi}(s,a,g) = -\|\phi(s,a) - \psi(g)\|_2$ (negative $L_2$ distan
 
 $$\max_{\pi_\theta}\;\mathbb{E}\!\left[f_{\phi,\psi}(s, \pi_\theta(s), g)\right]$$
 
+- $\mathcal{B}$: replay buffer of transitions; $|\mathcal{B}|$: sampled minibatch size.
+- $s, a, g$: state, action, and desired goal for an example; $(s_i, a_i, g_i)$: the positive pair; $g_j$ with $j \neq i$ is a negative goal drawn from the same batch.
+- $K$: number of contrastive candidates per row (typically $|\mathcal{B}|$ itself — in-batch negatives).
+- $\phi(s, a)$: state-action embedding network; $\psi(g)$: goal embedding network; both produce vectors in the same latent space.
+- $\pi_\theta$: actor policy; the actor objective pulls actions toward goals that the critic rates similar.
+
 Reward is sparse: $r = 1$ only when the agent reaches goal proximity. Hindsight Experience Replay (HER) relabels goals in the replay buffer to increase signal density.
 
 ### Residual Block Architecture

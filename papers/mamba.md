@@ -28,11 +28,19 @@ A continuous-time SSM maps input $x(t) \in \mathbb{R}$ to output $y(t) \in \math
 
 $$h'(t) = \mathbf{A}h(t) + \mathbf{B}x(t), \quad y(t) = \mathbf{C}h(t)$$
 
+- $\mathbf{A} \in \mathbb{R}^{N \times N}$: state-transition matrix (usually parameterized as diagonal or HiPPO).
+- $\mathbf{B} \in \mathbb{R}^{N \times 1}$: input-to-state projection; $\mathbf{C} \in \mathbb{R}^{1 \times N}$: state-to-output projection.
+- $h(t) \in \mathbb{R}^N$: hidden state; $h'(t) = dh/dt$.
+
 After zero-order hold (ZOH) discretization with timescale $\Delta$:
 
 $$\bar{\mathbf{A}} = \exp(\Delta \mathbf{A}), \quad \bar{\mathbf{B}} = (\Delta \mathbf{A})^{-1}(\exp(\Delta \mathbf{A}) - \mathbf{I}) \cdot \Delta \mathbf{B}$$
 
 $$h_t = \bar{\mathbf{A}} h_{t-1} + \bar{\mathbf{B}} x_t, \quad y_t = \mathbf{C} h_t$$
+
+- $\Delta > 0$: step size between consecutive tokens (input sample interval in the ODE view).
+- $\exp(\cdot)$: matrix exponential; $\mathbf{I}$: identity.
+- $\bar{\mathbf{A}}, \bar{\mathbf{B}}$: discrete-time equivalents used in the recurrence; $\mathbf{C}$ is not re-discretized.
 
 In LTI SSMs (S4), $\mathbf{A}, \mathbf{B}, \mathbf{C}, \Delta$ are all fixed parameters independent of input, enabling convolution-mode computation.
 
@@ -48,9 +56,9 @@ Mamba makes $\mathbf{B}$, $\mathbf{C}$, and $\Delta$ functions of the input $x$:
 | $\Delta$ | $(D)$ — fixed | $(B, L, D)$ — input-dependent |
 
 Concretely:
-- $s_B(x) = \text{Linear}_N(x)$
-- $s_C(x) = \text{Linear}_N(x)$
-- $s_\Delta(x) = \text{Broadcast}_D(\text{Linear}_1(x))$, then $\Delta = \text{softplus}(\text{Parameter} + s_\Delta(x))$
+- $s_B(x) = \text{Linear}_N(x)$ — a linear layer with $N$ output units producing $\mathbf{B}$ from $x$.
+- $s_C(x) = \text{Linear}_N(x)$ — same pattern for $\mathbf{C}$.
+- $s_\Delta(x) = \text{Broadcast}_D(\text{Linear}_1(x))$, then $\Delta = \text{softplus}(\text{Parameter} + s_\Delta(x))$ — scalar projection broadcast across the $D$ channels, then added to a learned bias and passed through softplus to keep $\Delta > 0$.
 
 Key interpretations: large $\Delta$ focuses on the current input (resets state), small $\Delta$ persists the state and ignores the input. This recovers classical RNN gating as a special case: when $N=1, \mathbf{A}=-1, \mathbf{B}=1$, the recurrence reduces to $h_t = (1-g_t)h_{t-1} + g_t x_t$ where $g_t = \sigma(\text{Linear}(x_t))$.
 

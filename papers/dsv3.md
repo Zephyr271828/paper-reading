@@ -49,6 +49,10 @@ MLA reduces KV cache via low-rank joint compression of keys and values into a la
 
 $$\mathbf{c}_t^{KV} = W^{DKV}\mathbf{h}_t, \quad \mathbf{k}_t^C = W^{UK}\mathbf{c}_t^{KV}, \quad \mathbf{v}_t^C = W^{UV}\mathbf{c}_t^{KV}$$
 
+- $\mathbf{h}_t$: residual-stream hidden state at position $t$; $\mathbf{c}_t^{KV} \in \mathbb{R}^{d_c}$: shared compressed latent.
+- $W^{DKV}$: down-projection (hidden $\to$ $d_c$); $W^{UK}, W^{UV}$: up-projections (hidden expanded back to per-head $\mathbf{k}, \mathbf{v}$).
+- $\mathbf{k}_t^C, \mathbf{v}_t^C$: content portions of keys/values; RoPE is applied on a *separate* decoupled key $\mathbf{k}_t^R$ (not to $\mathbf{k}_t^C$), so only $\mathbf{c}_t^{KV}$ and $\mathbf{k}_t^R$ need caching.
+
 At inference, only $\mathbf{c}_t^{KV}$ and the decoupled RoPE key $\mathbf{k}_t^R = \text{RoPE}(W^{KR}\mathbf{h}_t)$ are cached. Because $d_c \ll d_h n_h$, this dramatically reduces the KV cache footprint while maintaining MHA-level quality.
 
 ### DeepSeekMoE with Auxiliary-Loss-Free Load Balancing
@@ -57,9 +61,16 @@ FFN output per token $t$:
 
 $$\mathbf{h}_t' = \mathbf{u}_t + \sum_{i=1}^{N_s} \text{FFN}_i^{(s)}(\mathbf{u}_t) + \sum_{i=1}^{N_r} g_{i,t}\,\text{FFN}_i^{(r)}(\mathbf{u}_t)$$
 
+- $\mathbf{u}_t$: MoE-block input for token $t$ (post-attention hidden state); $\mathbf{h}_t'$: block output with residual.
+- $N_s, N_r$: number of shared and routed experts; $\text{FFN}_i^{(s)}$ always active, $\text{FFN}_i^{(r)}$ gated.
+- $g_{i,t}$: gate for routed expert $i$; nonzero only for the Top-$K$ selected experts, zero otherwise.
+
 Expert affinity and gating:
 
 $$s_{i,t} = \text{Sigmoid}(\mathbf{u}_t^T \mathbf{e}_i), \quad g_{i,t} = \frac{s_{i,t}}{\sum_{j \in \text{Top-}K} s_{j,t}}$$
+
+- $\mathbf{e}_i$: learned centroid (routing embedding) of routed expert $i$; $s_{i,t} \in (0,1)$: affinity score.
+- Top-$K$ selection can use $s_{i,t} + b_i$ (auxiliary-loss-free balancing bias) while gating normalization uses the original $s_{i,t}$.
 
 **Auxiliary-loss-free load balancing**: Each expert $i$ carries a scalar bias $b_i$ used only during routing ($\text{Top-}K$ selection uses $s_{i,t}+b_i$; gating uses original $s_{i,t}$). After every training step $b_i$ is decreased by $\gamma$ for overloaded experts and increased for underloaded ones ($\gamma=0.001$ for first 14.3T tokens). A tiny sequence-level balance loss $\mathcal{L}_{\text{Bal}} = \alpha \sum_i f_i P_i$ with $\alpha=0.0001$ prevents extreme within-sequence skew.
 

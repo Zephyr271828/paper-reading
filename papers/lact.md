@@ -26,31 +26,52 @@ LaCT (Large-Chunk Test-Time Training) scales TTT chunk sizes from the typical 16
 
 ### Core Update/Apply Operations
 
-The TTT layer maintains a **fast weight** $W$ (a SwiGLU-MLP). Within each chunk of $b$ tokens:
+The TTT layer maintains a **fast weight** $W$ (a SwiGLU-MLP whose parameters are updated *during inference* by gradient steps on the current sequence). Let $b$ be the chunk size (number of tokens processed in one batched update). For each token $i \in \{1, \ldots, b\}$, the preceding slow-weight attention projections produce a key $k_i \in \mathbb{R}^d$, a value $v_i \in \mathbb{R}^d$, and a query $q_i \in \mathbb{R}^d$, where $d$ is the model hidden dimension.
 
-**Update** (compress context into $W$):
+**Update** (compress the chunk's context into $W$):
 
 $$g = \nabla_W \sum_{i=1}^{b} \eta_i \cdot \mathcal{L}(f_W(k_i), v_i), \quad W \leftarrow \text{L2norm}(W - g)$$
 
-where the loss is the dot-product key–value association loss $\mathcal{L}(f_W(k_i), v_i) = -f_W(k_i)^\top v_i$ and $\eta_i$ is a per-token learned learning rate.
+- $g$: batched gradient accumulated over all $b$ tokens of the current chunk (a tensor with the same shape as $W$).
+- $\nabla_W$: partial derivative operator with respect to the fast-weight parameters $W$.
+- $f_W(\cdot)$: the fast-weight function (defined below) parameterized by the current $W$; it maps a key/query vector in $\mathbb{R}^d$ back to $\mathbb{R}^d$.
+- $\eta_i \in \mathbb{R}_{>0}$: a *per-token* learning rate produced by a small linear projection from the token's hidden state (learned end-to-end with the slow weights), so different tokens contribute with different step sizes.
+- $\mathcal{L}(f_W(k_i), v_i) = -f_W(k_i)^\top v_i$: dot-product key–value association loss. Minimizing its negative dot product pushes $f_W(k_i)$ to align with $v_i$, so after the update the map $k_i \mapsto v_i$ is stored in $W$.
+- $\text{L2norm}(\cdot)$: row-wise (or parameter-wise) $\ell_2$ normalization applied to the updated weight matrix to keep $\|W\|_2$ bounded across chunks and prevent drift.
+- $\leftarrow$: in-place assignment; after the update, $W$ is carried to the next chunk.
 
 **Apply** (read from $W$ for each query):
 
 $$o_i = f_W(q_i)$$
 
+- $q_i \in \mathbb{R}^d$: the query vector of token $i$ (same chunk).
+- $o_i \in \mathbb{R}^d$: the TTT layer's output for token $i$, obtained by a single forward pass through the (just-updated) fast weights.
+
 **Fast weight architecture** (SwiGLU-MLP, no bias):
 
-$$f_W(x) = W_2[\text{SiLU}(W_1 x) \odot (W_3 x)]$$
+$$f_W(x) = W_2\bigl[\text{SiLU}(W_1 x) \odot (W_3 x)\bigr]$$
+
+- $x \in \mathbb{R}^d$: input vector (a key during the update, a query during the apply).
+- $W_1, W_3 \in \mathbb{R}^{d_f \times d}$ and $W_2 \in \mathbb{R}^{d \times d_f}$: the three fast-weight matrices; $d_f$ is the fast-weight hidden size, which controls the total state size (e.g., $d_f = 2304$ in the 3B LM setting).
+- $W$ denotes the concatenation of $\{W_1, W_2, W_3\}$ — the gradient $\nabla_W$ above is taken jointly over all three.
+- $\text{SiLU}(z) = z \cdot \sigma(z)$ with $\sigma$ the sigmoid — the Swish activation, applied element-wise.
+- $\odot$: element-wise (Hadamard) product between the gated path $\text{SiLU}(W_1 x)$ and the linear path $W_3 x$ (both in $\mathbb{R}^{d_f}$).
 
 ### Update Rule Variants
 
 | Variant | Update rule |
 |---------|-------------|
-| GD | $W \leftarrow \text{L2norm}(W - \sum_i \eta_i \nabla_W \mathcal{L}_i)$ |
-| Momentum | $M \leftarrow \beta M + \sum_i \eta_i \nabla_W \mathcal{L}_i;\; W \leftarrow \text{L2norm}(W - M)$ |
-| **Muon** | $M \leftarrow \beta M + \sum_i \eta_i \nabla_W \mathcal{L}_i;\; W \leftarrow \text{L2norm}(W - \text{Muon}(M))$ |
+| GD | $W \leftarrow \text{L2norm}\bigl(W - \sum_{i=1}^{b} \eta_i \, \nabla_W \mathcal{L}_i\bigr)$ |
+| Momentum | $M \leftarrow \beta M + \sum_{i=1}^{b} \eta_i \, \nabla_W \mathcal{L}_i;\quad W \leftarrow \text{L2norm}(W - M)$ |
+| **Muon** | $M \leftarrow \beta M + \sum_{i=1}^{b} \eta_i \, \nabla_W \mathcal{L}_i;\quad W \leftarrow \text{L2norm}\bigl(W - \text{Muon}(M)\bigr)$ |
 
-Muon approximates $UV^\top$ from the SVD of the accumulated gradient via Newton-Schulz iterations, applying spectral normalization.
+Notation used in the table:
+
+- $\mathcal{L}_i \equiv \mathcal{L}(f_W(k_i), v_i)$: the per-token association loss defined above, so $\nabla_W \mathcal{L}_i$ is the gradient contributed by token $i$ alone.
+- $\eta_i$: same per-token learning rate as in the core update.
+- $M$: a momentum buffer with the same shape as $W$, persisted across chunks (initialized at zero).
+- $\beta \in [0, 1)$: momentum decay coefficient (a fixed hyperparameter; typically $\beta \approx 0.9$).
+- $\text{Muon}(\cdot)$: an orthogonalization operator. Given a matrix $M$ with (thin) SVD $M = U \Sigma V^\top$ (where $U$ and $V$ have orthonormal columns and $\Sigma$ is the diagonal matrix of singular values), $\text{Muon}(M)$ approximates $U V^\top$ — i.e., the nearest orthogonal matrix, which rescales every singular value of $M$ to $1$. This is computed in practice via a few Newton–Schulz iterations (matrix-polynomial iterations that avoid an explicit SVD), applying a form of spectral normalization to the update direction.
 
 ### Block Architecture
 

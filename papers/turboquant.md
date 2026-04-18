@@ -30,6 +30,10 @@ Given input vector $x \in \mathbb{R}^d$ with $\|x\|_2 = 1$, apply a random rotat
 
 $$f_X(t) = \frac{\Gamma(d/2)}{\sqrt{\pi}\,\Gamma\!\left(\frac{d-1}{2}\right)}\,(1-t^2)^{(d-3)/2}$$
 
+- $d$: vector dimension; $\Pi \in \mathbb{R}^{d \times d}$: orthogonal random matrix (so $\|\Pi x\|_2 = \|x\|_2$).
+- $t \in [-1, 1]$: value of a single rotated coordinate; $f_X$: its marginal density.
+- $\Gamma(\cdot)$: gamma function (generalized factorial); the prefactor is the normalizing constant.
+
 which converges to $\mathcal{N}(0, 1/d)$ as $d \to \infty$. This concentration makes coordinate magnitudes nearly i.i.d., enabling independent scalar quantization with near-optimal rate-distortion.
 
 ### MSE Variant ($Q_\text{mse}$)
@@ -42,6 +46,9 @@ which converges to $\mathcal{N}(0, 1/d)$ as $d \to \infty$. This concentration m
 **MSE distortion upper bound:**
 
 $$D_\text{mse} \leq \frac{\sqrt{3}\,\pi}{2} \cdot \frac{1}{4^b}$$
+
+- $b$: bits per coordinate (so $2^b$ scalar quantizer levels per coordinate).
+- $D_\text{mse} = \mathbb{E}\|x - \hat{x}\|_2^2$: expected squared-error per unit-norm input.
 
 Information-theoretic lower bound: $D_\text{mse}(Q) \geq \frac{1}{4^b}$, so TurboQuant is within a constant factor (~2.7x) of optimal.
 

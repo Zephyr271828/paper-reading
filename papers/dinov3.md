@@ -72,6 +72,11 @@ Let $\mathbf{X}_S \in \mathbb{R}^{P \times d}$ be the $\ell_2$-normalized patch 
 
 $$\mathcal{L}_\text{Gram} = \left\| \mathbf{X}_S \mathbf{X}_S^\top - \mathbf{X}_G \mathbf{X}_G^\top \right\|_F^2$$
 
+- $P$: number of patch tokens per image; $d$: feature dimension.
+- $\mathbf{X}_S, \mathbf{X}_G \in \mathbb{R}^{P \times d}$: $\ell_2$-normalized patch features from the student and frozen Gram teacher.
+- $\mathbf{X} \mathbf{X}^\top \in \mathbb{R}^{P \times P}$: Gram matrix of pairwise patch cosine similarities (rows are unit norm).
+- $\|\cdot\|_F^2$: squared Frobenius norm — penalizes the teacher–student mismatch in the *similarity structure*, not individual features.
+
 The refinement objective is:
 
 $$\mathcal{L}_\text{Ref} = w_D \mathcal{L}_\text{DINO} + \mathcal{L}_\text{iBOT} + w_{DK} \mathcal{L}_\text{DKoleo} + w_\text{Gram} \mathcal{L}_\text{Gram}$$

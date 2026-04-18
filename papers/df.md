@@ -51,6 +51,11 @@ For each sequence $(\mathbf{x}_1, \ldots, \mathbf{x}_T)$:
 
 $$\mathcal{L}(\theta) = \mathbb{E}_{k_{1:T},\, \mathbf{x}_{1:T},\, \boldsymbol{\epsilon}_{1:T}} \left[ \sum_{t=1}^T \|\boldsymbol{\epsilon}_t - \boldsymbol{\epsilon}_\theta(\mathbf{z}_{t-1}, \mathbf{x}_t^{k_t}, k_t)\|^2 \right]$$
 
+- $t \in \{1,\ldots,T\}$: time/sequence index; $k_t \in \{0,\ldots,K\}$: per-token noise level sampled independently.
+- $\mathbf{x}_t^{k_t}$: forward-diffused token at noise level $k_t$; $\boldsymbol{\epsilon}_t$: the Gaussian noise injected.
+- $\mathbf{z}_{t-1}$: recurrent latent summarizing history up to $t-1$; denoiser is conditioned on it instead of raw past tokens.
+- $\boldsymbol{\epsilon}_\theta$: noise predictor; loss is per-token MSE on the injected noise.
+
 **Theoretical guarantee**: DF training optimizes a reweighted ELBO on $\ln p_\theta((\mathbf{x}_t^{k_t})_{1 \le t \le T})$ averaged over noise levels, and simultaneously maximizes a lower bound on the likelihood for all sequences of noise levels.
 
 ### Sampling

@@ -37,6 +37,10 @@ $$\mathcal{L}_{\text{on-policy}} = \mathcal{L}_{\text{mask}} + \mathcal{L}_{\tex
 
 $$\mathcal{L}_{\text{mask}} = -\sum_i \log p_\theta^{(m)}(x_0^i \mid x_t^{(m)}), \quad \mathcal{L}_{\text{pred}} = -\sum_i \log p_\theta^{(p)}(x_0^i \mid x_t^{(p)})$$
 
+- $i$: token position; $x_0^i$: clean (ground-truth) token at position $i$.
+- $x_t^{(m)}$: standard mask-corrupted input; $x_t^{(p)}$: on-policy corrupted input (tokens sampled from the model's own distribution at the same mask ratio $t$).
+- $p_\theta^{(m)}, p_\theta^{(p)}$: the same network $\theta$ evaluated on $x_t^{(m)}$ and $x_t^{(p)}$ respectively — superscripts indicate *which input branch*, not separate parameters.
+
 ### Soft Parallel Decoding (SPD)
 
 SPD operates on a block of 32 tokens and represents intermediate states as **interpolations in embedding space** between mask embeddings and token embeddings, rather than binary mask-to-token transitions. This allows iterative self-revision instead of hard commitment.

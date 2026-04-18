@@ -28,6 +28,11 @@ Standard greedy decoding at step $k$ unmasks one token at position $l^{(k)}$:
 
 $$l^{(k)} = \arg\max_{l \in \{l \mid y_l^{(k-1)} = [\text{MASK}]\}} \left( \max_{v \in V} p_\theta(\hat{y}_l = v \mid X, Y^{(k-1)}) \right)$$
 
+- $k$: decoding step; $l$: sequence position; $V$: vocabulary.
+- Inner $\max_v$: per-position max token probability (the position's "confidence"); outer $\arg\max_l$: over *still-masked* positions.
+- $X$: prompt; $Y^{(k-1)}$: partial output from previous step; $\hat{y}_l = v$: the event "position $l$ is token $v$".
+- Result: at each step unmask the single masked position the model is most confident about.
+
 Naive parallel sampling unmasks $M > 1$ tokens simultaneously but causes severe accuracy degradation because early tokens are generated with sparse context and errors become permanently embedded.
 
 ### Drafting Phase

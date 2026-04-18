@@ -26,7 +26,11 @@ Tokens are independently masked according to a monotonically decreasing noise sc
 
 $$q(z_t \mid x) = \text{Cat}(z_t;\; \alpha_t \cdot x + (1 - \alpha_t) \cdot m)$$
 
-where $m$ is the mask token and $x \in \mathcal{V}^L$ is the clean sequence.
+- $x$: clean token sequence of length $L$ over vocabulary $\mathcal{V}$; each position treated as a one-hot vector.
+- $z_t$: noisy sequence at time $t \in [0,1]$; each token is either $x_\ell$ (kept) or $m$ (masked).
+- $\alpha_t \in [0,1]$: unmasking probability, monotonically decreasing from $\alpha_0 \approx 1$ to $\alpha_1 \approx 0$.
+- $m$: the mask token (one-hot on the special `[MASK]` symbol).
+- $\text{Cat}(z_t; p)$: categorical distribution with class probability vector $p$; the convex combination gives per-token Bernoulli masking.
 
 ### SUBS Parameterization (Reverse Process)
 
@@ -44,9 +48,17 @@ The continuous-time NELBO is:
 
 $$\mathcal{L}_\infty = \mathbb{E}_q \int_0^1 \frac{\alpha'_t}{1 - \alpha_t} \sum_{\ell=1}^{L} \log \langle x_\theta^\ell(z_t, t),\, x^\ell \rangle \, dt$$
 
+- $\ell$: token position index; $L$: sequence length.
+- $x_\theta^\ell(z_t, t) \in \Delta^{|\mathcal{V}|}$: denoiser's predicted probability distribution over the vocabulary for position $\ell$.
+- $\langle x_\theta^\ell, x^\ell \rangle$: probability the denoiser assigns to the true token at position $\ell$ (dot product between predicted distribution and one-hot ground truth).
+- $\alpha'_t = d\alpha_t / dt$: time derivative of the schedule (negative; weights later/more-masked times more strongly).
+
 With the SUBS parameterization the KL terms collapse to a weighted cross-entropy, giving the discrete-time objective:
 
 $$\mathcal{L}_\text{diffusion} = \sum_{i=1}^{T} \mathbb{E}_q \left[ \frac{\alpha_{t(i)} - \alpha_{s(i)}}{1 - \alpha_{t(i)}} \log \langle x_\theta(z_{t(i)}, t(i)),\, x \rangle \right]$$
+
+- $T$: number of discretization steps; $t(i) > s(i)$: adjacent time grid points for step $i$.
+- $\alpha_{t(i)} - \alpha_{s(i)}$: amount of unmasking progress made in this step; the fraction weights the cross-entropy by how informative the step is.
 
 This is strictly simpler and more numerically stable than the general D3PM absorbing-state loss (no sparse $\bar{Q}_t$ matrix inversions required).
 

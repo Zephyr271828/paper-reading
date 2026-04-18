@@ -28,6 +28,12 @@ SDAR converts a pretrained autoregressive (AR) model into a hybrid blockwise dif
 
 $$\mathcal{L}_{\text{blockwise}}(\theta) = \mathbb{E}_{t,\, q(b_k^t \mid b_k^0)} \left[ -\frac{1}{t} \sum_{\ell=1}^{B} \mathbf{1}\!\left[x_t^{(k,\ell)} = \texttt{[MASK]}\right] \log p_\theta\!\left(x_0^{(k,\ell)} \mid b_k^t,\, b_{<k};\, \theta\right) \right]$$
 
+- $k$: block index; $B$: block size; $\ell$: position inside the block.
+- $b_k^0$: clean (ground-truth) block; $b_k^t$: noisy block at mask rate $t$; $b_{<k}$: all preceding clean blocks.
+- $x_t^{(k,\ell)}$: token at position $\ell$ of block $k$ after masking; loss is only accumulated on masked positions via $\mathbf{1}[\cdot]$.
+- $x_0^{(k,\ell)}$: the clean target token; the cross-entropy is computed against the model's conditional $p_\theta(\cdot \mid b_k^t, b_{<k})$.
+- $t \in (0, 1]$: sampled mask rate; $1/t$ reweights so lightly masked samples (easy) contribute less than heavily masked ones.
+
 The $1/t$ term is a time-dependent reweighting factor. Crucially, the conversion requires **no logits shift and no attention mask annealing**.
 
 **Attention mask construction:** The perturbed ($b_k^t$) and clean ($b_{<k}$) sequences are concatenated into a single forward pass. Clean (preceding) blocks use block-wise causal attention; the corrupted block attends to itself and all preceding blocks.

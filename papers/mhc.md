@@ -26,6 +26,11 @@ HC expands the residual stream dimension from $C$ to $n \times C$ and parameteri
 
 $$\mathbf{x}_{l+1} = \mathcal{H}_l^{\text{res}}\mathbf{x}_l + \mathcal{H}_l^{\text{post}\top}\mathcal{F}(\mathcal{H}_l^{\text{pre}}\mathbf{x}_l, \mathcal{W}_l)$$
 
+- $\mathbf{x}_l \in \mathbb{R}^{n \times C}$: hyper-expanded residual stream at layer $l$ (stack of $n$ streams, each of width $C$).
+- $\mathcal{H}_l^{\text{res}} \in \mathbb{R}^{n \times n}$: residual mixing matrix (how much of each old stream flows into each new stream).
+- $\mathcal{H}_l^{\text{pre}}, \mathcal{H}_l^{\text{post}} \in \mathbb{R}^{1 \times n}$ (or $\mathbb{R}^n$): vectors that combine the $n$ streams into the single input / redistribute the single output of the block.
+- $\mathcal{F}(\cdot, \mathcal{W}_l)$: the actual transformer block (attention or FFN) with parameters $\mathcal{W}_l$.
+
 HC allows $\mathcal{H}_l^{\text{res}}$ to take arbitrary values, which breaks spectral-norm bounds and causes gradient explosion in large models (composite-mapping gain magnitude peaks at $\sim 3000$ in a 27B model).
 
 ### mHC: Manifold Projection
@@ -33,6 +38,9 @@ HC allows $\mathcal{H}_l^{\text{res}}$ to take arbitrary values, which breaks sp
 mHC constrains $\mathcal{H}_l^{\text{res}}$ to the doubly stochastic manifold:
 
 $$\mathcal{M}^{\text{res}} = \{\mathcal{H} \in \mathbb{R}^{n \times n} \mid \mathcal{H}\mathbf{1}_n = \mathbf{1}_n,\; \mathbf{1}_n^\top\mathcal{H} = \mathbf{1}_n^\top,\; \mathcal{H} \geq 0\}$$
+
+- $\mathbf{1}_n \in \mathbb{R}^n$: all-ones vector; the two equalities are the row-sum = 1 and column-sum = 1 constraints of a doubly stochastic matrix.
+- $\mathcal{H} \geq 0$: elementwise non-negativity.
 
 This guarantees $\|\mathcal{H}_l^{\text{res}}\|_2 \leq 1$ (spectral norm bounded), preservation of global-mean statistics across stream mixing, and closure under multiplication (product of doubly stochastic matrices remains doubly stochastic).
 
@@ -44,6 +52,13 @@ $$\begin{cases}
 \tilde{\mathcal{H}}_l^{\text{post}} = \alpha_l^{\text{post}} \cdot (\vec{\mathbf{x}}_l' \varphi_l^{\text{post}}) + \mathbf{b}_l^{\text{post}} \\
 \tilde{\mathcal{H}}_l^{\text{res}} = \alpha_l^{\text{res}} \cdot \mathrm{mat}(\vec{\mathbf{x}}_l' \varphi_l^{\text{res}}) + \mathbf{b}_l^{\text{res}}
 \end{cases}$$
+
+- $\vec{\mathbf{x}}_l$: a per-token representation (e.g., the mean or first stream of the $n$-stream state) used only to produce input-dependent coefficients.
+- $\varphi_l^{\text{pre}}, \varphi_l^{\text{post}} \in \mathbb{R}^{d \times n}$, $\varphi_l^{\text{res}} \in \mathbb{R}^{d \times n^2}$: learned projections.
+- $\mathbf{b}_l^{\ast}$: learned bias of matching shape, initialized so that at step 0 the mapping is identity.
+- $\alpha_l^{\ast}$: learned scalar gating factor; small init keeps the layer close to a standard residual at the start of training.
+- $\mathrm{mat}(\cdot)$: reshape a length-$n^2$ vector into an $n \times n$ matrix.
+- $\tilde{\mathcal{H}}_l^{\ast}$: raw (unprojected) coefficients, fed to step 2.
 
 Gating factors $\alpha$ are initialized to $0.01$ to keep early training close to the standard residual baseline.
 
@@ -57,9 +72,13 @@ $$\begin{cases}
 
 $\sigma$ denotes the Sigmoid function (enforces non-negativity on $\mathcal{H}^{\text{pre}}$ / $\mathcal{H}^{\text{post}}$).
 
-**Sinkhorn-Knopp projection:** starting from $\mathbf{M}^{(0)} = \exp(\tilde{\mathcal{H}}_l^{\text{res}})$, alternate row and column normalizations:
+**Sinkhorn-Knopp projection:** starting from $\mathbf{M}^{(0)} = \exp(\tilde{\mathcal{H}}_l^{\text{res}})$ (elementwise), alternate row and column normalizations:
 
 $$\mathbf{M}^{(t)} = \mathcal{T}_r\!\left(\mathcal{T}_c\!\left(\mathbf{M}^{(t-1)}\right)\right), \quad t_{\max} = 20$$
+
+- $\mathcal{T}_r(M)$: divide each row by its sum so row sums = 1.
+- $\mathcal{T}_c(M)$: divide each column by its sum so column sums = 1.
+- After $t_{\max} = 20$ alternating iterations $\mathbf{M}^{(t)}$ is (approximately) doubly stochastic and is taken as $\mathcal{H}_l^{\text{res}}$.
 
 ### Infrastructure Optimizations
 
@@ -72,6 +91,8 @@ $$\mathbf{M}^{(t)} = \mathcal{T}_r\!\left(\mathcal{T}_c\!\left(\mathbf{M}^{(t-1)
 **Memory recomputation:** selective checkpointing with block-synchronized boundaries. Optimal recomputation block size:
 
 $$L_r^* \approx \sqrt{\frac{nL}{n+2}}$$
+
+- $L$: total number of transformer layers; $n$: HC expansion rate; $L_r^*$: number of layers per recomputation segment that minimizes total activation memory plus recomputation FLOPs.
 
 **DualPipe schedule extension:** a dedicated high-priority compute stream handles FFN post-residual kernels; persistent kernels in attention layers are disabled to allow preemption; recomputation is decoupled from pipeline-communication dependencies.
 

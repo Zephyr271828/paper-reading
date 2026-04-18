@@ -43,6 +43,12 @@ Standard GRPO is applied directly over this AR policy. For each question $q$, $G
 
 $$\mathcal{J}(\theta) = \mathbb{E}_{q,\{o_i\}} \left[ \frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|} \sum_{k=1}^{|o_i|} \left( \min\!\left(\rho_{i,k}\,\hat{A}_{i,k},\ \mathrm{clip}(\rho_{i,k}, 1{-}\varepsilon, 1{+}\varepsilon)\,\hat{A}_{i,k}\right) - \beta\,\mathbb{D}_{\mathrm{KL}} \right) \right]$$
 
+- $G$: group size (number of rollouts sampled per prompt $q$); $o_i$: the $i$-th rollout, length $|o_i|$.
+- $\hat{A}_{i,k}$: advantage for token $k$ of rollout $i$, standardized within the group of $G$ completions.
+- $\rho_{i,k}$: importance-ratio between the current and behavior policy, as defined below.
+- $\mathrm{clip}(\cdot, 1-\varepsilon, 1+\varepsilon)$: clamp into $[1-\varepsilon, 1+\varepsilon]$ (PPO-style trust region).
+- $\beta$: KL penalty weight; $\mathbb{D}_{\mathrm{KL}}$: KL between $\pi_\theta$ and a reference policy (often set to $0$ here, per the table below).
+
 where $\rho_{i,k} = \pi_\theta(o_{i,k} \mid o_{i,<k}, q) / \pi_{\theta_\mathrm{old}}(o_{i,k} \mid o_{i,<k}, q)$ is the probability ratio.
 
 **Parallel Decoding Preserved:** At inference time, the model still decodes in the standard dLLM parallel fashion — only training uses the AR masking structure.

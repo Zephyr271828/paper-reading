@@ -28,7 +28,25 @@ read: false
 ![](../assets/method_name_fig.png)
 
 <!-- Core idea + concrete algorithmic steps sufficient for reproduction.
-     Use LaTeX for all math: inline $x$ or block $$\mathcal{L} = \ldots$$ -->
+     Use LaTeX for all math: inline $x$ or block $$\mathcal{L} = \ldots$$
+
+     MATH NOTATION POLICY: After every non-trivial block equation, add a short bullet list
+     defining every symbol that appears in it — the letter, its type/shape (e.g.,
+     $x \in \mathbb{R}^d$), and its role. Include the meaning of operators ($\nabla$, $\odot$,
+     $\leftarrow$), indices (what does $i$ range over?), and dimensions ($d$, $b$, $d_f$, etc.)
+     even when they seem standard. For composite operators named after methods
+     (e.g., $\text{Muon}(\cdot)$, $\text{L2norm}(\cdot)$), describe what the operator *does*
+     to its input, not just its name. Define each symbol once at first appearance and reuse.
+     Skip trivial notation (plain $\sum$, $\sigma$) unless combined into a non-obvious composite.
+
+     Example:
+
+     $$W \leftarrow \text{L2norm}(W - g)$$
+
+     - $W$: fast-weight matrix carried across chunks.
+     - $g$: accumulated gradient (same shape as $W$).
+     - $\text{L2norm}(\cdot)$: row-wise $\ell_2$ normalization that bounds $\|W\|_2$.
+     - $\leftarrow$: in-place assignment. -->
 
 ---
 

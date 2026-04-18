@@ -47,7 +47,9 @@ Vero is a single-stage, fully open RL recipe for training vision-language models
 
 $$R(y,y^*) = (1-\alpha)\,R_\text{acc}(y,y^*) + \alpha\,R_\text{fmt}(y) + R_\text{overlong}(y)$$
 
-with $\alpha = 0.2$.
+- $y$: model rollout (thought + answer); $y^*$: ground-truth answer.
+- $\alpha \in [0,1]$: trade-off between accuracy and format rewards; fixed at $0.2$.
+- $R_\text{acc}, R_\text{fmt}, R_\text{overlong}$: defined below; $R_\text{overlong} \le 0$ acts as a penalty, not a weighted term.
 
 - **$R_\text{acc}$**: task-routed verifier (string match, MC exact match, numeric via math-verify, grounding IoU/F1, LLM-judge for open-ended captions)
 - **$R_\text{fmt}$**: binary reward for `<think>...</think><answer>...</answer>` format
@@ -58,6 +60,11 @@ with $\alpha = 0.2$.
 GSPO replaces GRPO's per-token importance ratios with a **sequence-level ratio**. The sequence-average log-probability difference is:
 
 $$\bar{\Delta}_i = \frac{1}{|y_i|}\sum_t \left[\log\pi_\theta(y_{i,t}) - \log\pi_{\theta_\text{old}}(y_{i,t})\right]$$
+
+- $i$: rollout index within a group; $y_i$: the $i$-th rollout (token sequence), $|y_i|$ its length.
+- $t$: token index inside $y_i$; $y_{i,t}$: the $t$-th token conditioned on prefix $y_{i,<t}$.
+- $\pi_\theta, \pi_{\theta_\text{old}}$: current and behavior policies.
+- $\bar{\Delta}_i$: sequence-averaged log-probability difference; $\exp(\bar{\Delta}_i)$ is the shared importance ratio applied to every token in rollout $i$, replacing GRPO's per-token ratio.
 
 This value is used to form token-level ratios for clipped policy optimization (no KL penalty, asymmetric clipping with $\varepsilon_\text{high} > \varepsilon_\text{low}$). GSPO produces more stable entropy than GRPO ($0.58\pm0.11$ vs $0.50\pm0.11$) and DAPO ($0.22\pm0.15$).
 

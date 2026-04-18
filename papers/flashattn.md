@@ -35,12 +35,20 @@ For numerically stable softmax with running statistics:
 
 $$m(x) \triangleq \max_i x_i, \quad \ell(x) \triangleq \sum_i e^{x_i - m(x)}, \quad \text{softmax}(x) = \frac{e^{x - m(x)}}{\ell(x)}$$
 
+- $x \in \mathbb{R}^n$: a row of attention logits; $x_i$: its $i$-th entry.
+- $m(x)$: running max used to stabilize $\exp$ against overflow.
+- $\ell(x)$: running denominator — sum of shifted exponentials.
+
 For concatenated inputs $x = [x^{(1)}, x^{(2)}]$:
 
 $$m([x^{(1)}, x^{(2)}]) = \max(m(x^{(1)}), m(x^{(2)}))$$
 $$\ell([x^{(1)}, x^{(2)}]) = e^{m(x^{(1)}) - m(x)} \ell(x^{(1)}) + e^{m(x^{(2)}) - m(x)} \ell(x^{(2)})$$
 
+- The rescaling factors $e^{m(x^{(j)}) - m(x)}$ re-base each partial sum to the new global max so the two denominators can be combined exactly.
+
 Each block's partial output $\tilde{O}_i$ is rescaled by the correct normalization before accumulation.
+
+- $\tilde{O}_i \in \mathbb{R}^{B_r \times d}$: unnormalized accumulator for the $i$-th query block; after every key block it is multiplied by the ratio of old to new $\ell$ so the final $O_i$ equals exact softmax-weighted values.
 
 **2. Recomputation (gradient checkpointing)**
 
@@ -51,6 +59,12 @@ Rather than storing the $N \times N$ matrices $S, P$ for the backward pass, Flas
 During backprop, $S$ and $P$ are **recomputed on-the-fly** from $Q, K$ blocks. The backward pass uses auxiliary scalar $D_i = do_i^\top o_i$ to compute gradients:
 
 $$dq_i = \sum_j P_{ij}(dP_{ij} - D_i) k_j, \qquad dk_j = \sum_i P_{ij}(dP_{ij} - D_i) q_i$$
+
+- $S_{ij} = q_i^\top k_j / \sqrt{d}$: raw attention logits; $P = \text{softmax}(S)$ row-wise; $O = PV$.
+- $o_i, q_i, k_j \in \mathbb{R}^d$: rows of $O, Q, K$; $do_i = \partial \mathcal{L}/\partial o_i$: upstream gradient from the next layer.
+- $dP_{ij} = do_i^\top v_j$: gradient w.r.t. a softmax probability before the softmax derivative.
+- $D_i = do_i^\top o_i$: scalar precomputed per row; it is the softmax-Jacobian correction term (subtracting it turns $dP$ into $dS$).
+- $dq_i, dk_j$: gradients w.r.t. the query and key rows; written to HBM at the end.
 
 This trades extra FLOPs for drastically fewer HBM reads/writes.
 

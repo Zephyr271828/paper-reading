@@ -31,7 +31,10 @@ The paper reinterprets Adam, Shampoo, and Prodigy as **steepest descent under sp
 
 $$\arg\min_{\Delta\mathbf{w}} \left[ \mathbf{g}^\top \Delta\mathbf{w} + \frac{\lambda}{2}\|\Delta\mathbf{w}\|^2 \right] = -\frac{\|\mathbf{g}\|^\dagger}{\lambda} \cdot \arg\max_{\|\mathbf{t}\|=1} \mathbf{g}^\top \mathbf{t}$$
 
-where $\|\cdot\|^\dagger$ denotes the dual norm.
+- $\mathbf{g}$: loss gradient; $\Delta\mathbf{w}$: update direction.
+- $\lambda \geq 0$: sharpness (penalty strength); larger $\lambda$ shrinks the step magnitude.
+- $\|\cdot\|$: the *primal* norm we design the optimizer around; $\|\cdot\|^\dagger$: its dual norm ($\|\mathbf{g}\|^\dagger = \sup_{\|\mathbf{t}\| \leq 1} \mathbf{g}^\top \mathbf{t}$).
+- The solution decomposes into (i) a magnitude $\|\mathbf{g}\|^\dagger / \lambda$ and (ii) a unit-norm direction of steepest descent — this direction is what different optimizers choose differently.
 
 ### Induced Operator Norm
 
@@ -39,9 +42,13 @@ where $\|\cdot\|^\dagger$ denotes the dual norm.
 
 $$\|\mathbf{M}\|_{\alpha \to \beta} = \max_{\mathbf{x} \in \mathbb{R}^{d_\text{in}}} \frac{\|\mathbf{M}\mathbf{x}\|_\beta}{\|\mathbf{x}\|_\alpha}$$
 
+- $\mathbf{M} \in \mathbb{R}^{d_\text{out} \times d_\text{in}}$: a weight (or update) matrix.
+- $\|\cdot\|_\alpha, \|\cdot\|_\beta$: vector norms on the input and output spaces ($\alpha, \beta \in \{1, 2, \infty, \ldots\}$).
+- Intuition: the largest amplification $\mathbf{M}$ can produce when the input is unit-norm in $\alpha$ and the output is measured in $\beta$.
+
 Tractable special cases (Proposition 8):
-- $\|\mathbf{M}\|_{\ell_1 \to \ell_p} = \max_j \|\text{col}_j(\mathbf{M})\|_p$
-- $\|\mathbf{M}\|_{\ell_p \to \ell_\infty} = \max_i \|\text{row}_i(\mathbf{M})\|_{p/(p-1)}$
+- $\|\mathbf{M}\|_{\ell_1 \to \ell_p} = \max_j \|\text{col}_j(\mathbf{M})\|_p$ — worst-case column $\ell_p$ norm.
+- $\|\mathbf{M}\|_{\ell_p \to \ell_\infty} = \max_i \|\text{row}_i(\mathbf{M})\|_{p/(p-1)}$ — worst-case row norm, in the Hölder conjugate of $p$.
 
 ### Optimizers as Steepest Descent
 
@@ -63,6 +70,10 @@ $$\Delta\mathbf{W}_l = -\eta \cdot \text{sign}(\mathbf{G}_l)$$
 **Prodigy (Escape Velocity).** Parameter-free sign descent with dynamic step-size warm-up. Without EMA:
 
 $$\eta_{t+1} = \max\!\left(\eta_t,\; \frac{\mathbf{g}_t^\top(\mathbf{w}_0 - \mathbf{w}_t)}{\|\mathbf{g}_t\|_1}\right)$$
+
+- $\eta_t$: step size at iteration $t$ (monotonically non-decreasing — Prodigy never shrinks it).
+- $\mathbf{w}_0, \mathbf{w}_t$: initial and current weights; $\mathbf{w}_0 - \mathbf{w}_t$: cumulative travel from init.
+- Ratio inside the max is a data-driven estimate of the distance to the optimum.
 
 Step size grows exponentially until weights "escape" the initial linear approximation region.
 

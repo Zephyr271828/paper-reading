@@ -39,7 +39,8 @@ DFlash replaces the autoregressive draft model in speculative decoding with a **
 
 $$w_k = \exp\!\left(-\frac{k-1}{\gamma}\right)$$
 
-where $k$ is position index within the block and $\gamma = 7$ for block size 16. Earlier positions receive higher weight.
+- $k \in \{1, \ldots, \text{block size}\}$: 1-indexed position within the draft block.
+- $\gamma$: decay scale (tokens per $e$-fold); set to $7$ for block size $16$. $w_1 = 1$; $w_k$ decays exponentially so later positions contribute less to the loss.
 
 - **Optimizer:** AdamW, lr = 6e-4, 6 epochs, max sequence length 3072 tokens.
 

@@ -35,6 +35,13 @@ where:
 
 $$\alpha_{i \to l} = \frac{\exp\!\left(\bm{w}_l^\top \operatorname{RMSNorm}(\bm{k}_i)\right)}{\sum_{j=0}^{l-1} \exp\!\left(\bm{w}_l^\top \operatorname{RMSNorm}(\bm{k}_j)\right)}$$
 
+- $\bm{h}_l \in \mathbb{R}^d$: residual-stream input to layer $l$; $f_l(\cdot)$: the block transformation (attention or FFN).
+- $\bm{v}_i, \bm{k}_i \in \mathbb{R}^d$: the $i$-th layer's output reused both as a value and as a key; index $i = 0$ is the token embedding $\bm{h}_1$.
+- $\bm{w}_l \in \mathbb{R}^d$: layer-$l$ learned pseudo-query; input-*independent* (same for all tokens), zero-initialized.
+- $\alpha_{i \to l} \in [0,1]$: softmax weight from source layer $i$ onto target layer $l$; normalized over $j = 0, \ldots, l-1$.
+- $\operatorname{RMSNorm}(\cdot)$: applied to keys so the attention weights depend on direction, not magnitude.
+- $L$: total number of layers; $d$: hidden size.
+
 Full AttnRes complexity: $O(L^2 d)$ arithmetic, $O(Ld)$ memory per token.
 
 ### Block Attention Residuals
@@ -45,11 +52,15 @@ To reduce the $O(Ld)$ memory and cross-stage communication overhead for large-sc
 
 $$\bm{b}_n = \sum_{j \in \mathcal{B}_n} f_j(\bm{h}_j)$$
 
-with partial sums $\bm{b}_n^i$ tracking the running total after $i$ layers within the block.
+- $\mathcal{B}_n$: index set of the $S$ layers assigned to block $n$; $\bm{b}_n \in \mathbb{R}^d$: the block summary vector.
+- $\bm{b}_n^i$: running partial sum after the first $i$ layers inside block $n$ ($\bm{b}_n^S = \bm{b}_n$).
 
 **Inter-block attention** — for the $i$-th layer in block $n$, the value matrix is:
 
 $$\mathbf{V} = \begin{cases} [\bm{b}_0, \bm{b}_1, \ldots, \bm{b}_{n-1}]^\top & i = 1 \\ [\bm{b}_0, \bm{b}_1, \ldots, \bm{b}_{n-1}, \bm{b}_n^{i-1}]^\top & i \geq 2 \end{cases}$$
+
+- $\mathbf{V} \in \mathbb{R}^{m \times d}$: the stack of candidate residual sources available to the current layer ($m = n$ or $n+1$).
+- First layer of a block ($i = 1$) has no intra-block history yet; later layers attend to previous blocks *and* their own running partial sum $\bm{b}_n^{i-1}$.
 
 where $\bm{b}_0 = \bm{h}_1$ (token embedding always included). Block AttnRes reduces memory/communication from $O(Ld)$ to $O(Nd)$. With $N \approx 8$, it recovers most of the gains of Full AttnRes.
 

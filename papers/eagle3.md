@@ -38,6 +38,10 @@ EAGLE-3 extracts hidden states from three depth levels of the target model — l
 
 $$g = \text{FC}([l\,;\,m\,;\,h]) \in \mathbb{R}^k$$
 
+- $l, m, h \in \mathbb{R}^k$: hidden states pulled from a low, mid, and high layer of the *target* model (each has the target's hidden dimension $k$).
+- $[\,;\,]$: vector concatenation ($\mathbb{R}^{3k}$); $\text{FC}$: a learned linear layer that projects back down to $\mathbb{R}^k$ so the draft model input has the original hidden size.
+- $g$: the fused feature vector that the draft model consumes at each position.
+
 This replaces EAGLE's reliance on only the topmost hidden state.
 
 ### Training-Time Test
