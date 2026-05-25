@@ -2,11 +2,11 @@
 tags:
   - MLSYS
   - NLP
-arxiv: "https://arxiv.org/abs/2312.00752"
-github: "https://github.com/state-spaces/mamba"
+arxiv: https://arxiv.org/abs/2312.00752
+github: https://github.com/state-spaces/mamba
 website: ""
 year: 2023
-read: false
+read: true
 ---
 
 # Mamba: Linear-Time Sequence Modeling with Selective State Spaces

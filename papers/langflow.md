@@ -116,13 +116,13 @@ This replaces prior SDE-based bounds that required many evaluations and is used 
 
 ### Main Results (PPL and Gen. PPL)
 
-| Model | Type | LM1B Gen. PPL | LM1B PPL | OWT Gen. PPL | OWT PPL |
-|---|---|---|---|---|---|
-| Transformer | AR | 66.7 | 22.8 | 35.9 | 17.5 |
-| SEDD Uniform | Discrete | — | — | 103.6 | 29.7 |
-| MDLM | Discrete | 103.9 | 31.0 | 104.9 | 23.2 |
-| Plaid | Discrete | 77.3 | 32.4 | — | — |
-| **LangFlow** | **Continuous** | **92.2** | **30.0** | **36.5** | **24.6** |
+| Model        | Type           | LM1B Gen. PPL | LM1B PPL | OWT Gen. PPL | OWT PPL  |
+| ------------ | -------------- | ------------- | -------- | ------------ | -------- |
+| Transformer  | AR             | 66.7          | 22.8     | 35.9         | 17.5     |
+| SEDD Uniform | Discrete       | —             | —        | 103.6        | 29.7     |
+| MDLM         | Discrete       | 103.9         | 31.0     | 104.9        | 23.2     |
+| Plaid        | Discrete       | 77.3          | 32.4     | —            | —        |
+| **LangFlow** | **Continuous** | **92.2**      | **30.0** | **36.5**     | **24.6** |
 
 - **PPL**: LangFlow achieves 30.0 on LM1B (best among diffusion models; MDLM: 31.0) and 24.6 on OWT (near MDLM's 23.2).
 - **Gen. PPL**: LangFlow achieves 36.5 on OWT — far better than discrete diffusion baselines (MDLM: 104.9), approaching the AR Transformer (35.9).

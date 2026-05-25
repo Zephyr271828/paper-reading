@@ -7,7 +7,7 @@ arxiv: https://arxiv.org/abs/2604.10556
 github: https://github.com/ZeroLoss-Lab/Lost-in-Diffusion
 website: ""
 year: 2026
-read: false
+read: true
 ---
 
 # Lost in Diffusion: Uncovering Hallucination Patterns and Failure Modes in Diffusion Large Language Models
