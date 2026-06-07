@@ -7,7 +7,7 @@ arxiv: https://arxiv.org/abs/2603.03251
 github: https://github.com/tanishqkumar/ssd
 website: ""
 year: 2026
-read: false
+read: true
 ---
 
 # Speculative Speculative Decoding

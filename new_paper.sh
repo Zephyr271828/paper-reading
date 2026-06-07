@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Usage: ./new_paper.sh [--codex|--claude] <arxiv_url>
+# Usage: ./new_paper.sh [--codex|--claude] <paper_url>
 # Example: ./new_paper.sh https://arxiv.org/abs/2406.11931
 #          ./new_paper.sh --claude https://arxiv.org/abs/2406.11931
+#          ./new_paper.sh https://example.com/some-paper.pdf
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -9,6 +10,7 @@ ENGINE="claude"
 TIMEOUT_SECONDS="${NEW_PAPER_TIMEOUT_SECONDS:-1800}"
 ARXIV_ID=""
 ARXIV_LOG_BASENAME=""
+IS_ARXIV=0
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -18,48 +20,79 @@ while [[ $# -gt 0 ]]; do
     *) ARXIV_URL="$1"; shift ;;
   esac
 done
-: "${ARXIV_URL:?Usage: $0 [--codex|--claude] <arxiv_url>}"
+: "${ARXIV_URL:?Usage: $0 [--codex|--claude] <paper_url>}"
 
 parse_arxiv_url() {
   local arxiv_url="$1"
-  local url_no_fragment url_no_query path_kind arxiv_id
+  local url_no_fragment url_no_query path_kind arxiv_id host path slug
 
   url_no_fragment="${arxiv_url%%#*}"
   url_no_query="${url_no_fragment%%\?*}"
 
+  # Case 1: arXiv URL — keep strict parsing so we get a clean arXiv ID.
   if [[ "$url_no_query" =~ ^https?://(www\.)?arxiv\.org/(abs|html|pdf)/(.*)$ ]]; then
     path_kind="${BASH_REMATCH[2]}"
     arxiv_id="${BASH_REMATCH[3]}"
-  else
-    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
-    echo "Expected https://arxiv.org/abs/<id>, https://arxiv.org/html/<id>, or https://arxiv.org/pdf/<id>.pdf." >&2
-    exit 1
-  fi
 
-  if [[ -z "$arxiv_id" || "$arxiv_id" == */ || "$arxiv_id" == *" "* ]]; then
-    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
-    exit 1
-  fi
-
-  if [[ "$path_kind" == "pdf" ]]; then
-    if [[ "$arxiv_id" != *.pdf ]]; then
-      echo "Error: Invalid arXiv PDF URL format: $arxiv_url" >&2
+    if [[ -z "$arxiv_id" || "$arxiv_id" == */ || "$arxiv_id" == *" "* ]]; then
+      echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
       exit 1
     fi
-    arxiv_id="${arxiv_id%.pdf}"
-  elif [[ "$arxiv_id" == *.pdf ]]; then
-    echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
+
+    if [[ "$path_kind" == "pdf" ]]; then
+      if [[ "$arxiv_id" != *.pdf ]]; then
+        echo "Error: Invalid arXiv PDF URL format: $arxiv_url" >&2
+        exit 1
+      fi
+      arxiv_id="${arxiv_id%.pdf}"
+    elif [[ "$arxiv_id" == *.pdf ]]; then
+      echo "Error: Invalid arXiv URL format: $arxiv_url" >&2
+      exit 1
+    fi
+
+    if [[ "$arxiv_id" =~ ^[0-9]{4}\.[0-9]{4,5}(v[0-9]+)?$ ]] || [[ "$arxiv_id" =~ ^[[:alnum:]-]+/[0-9]{7}(v[0-9]+)?$ ]]; then
+      ARXIV_ID="$arxiv_id"
+      ARXIV_LOG_BASENAME="${arxiv_id//\//_}"
+      IS_ARXIV=1
+      return 0
+    fi
+
+    echo "Error: Invalid arXiv ID in URL: $arxiv_url" >&2
     exit 1
   fi
 
-  if [[ "$arxiv_id" =~ ^[0-9]{4}\.[0-9]{4,5}(v[0-9]+)?$ ]] || [[ "$arxiv_id" =~ ^[[:alnum:]-]+/[0-9]{7}(v[0-9]+)?$ ]]; then
-    ARXIV_ID="$arxiv_id"
-    ARXIV_LOG_BASENAME="${arxiv_id//\//_}"
-    return 0
+  # Case 2: generic URL (PDF or webpage) — derive a log basename from host + last path segment.
+  # This is ONLY for log/status filenames; the actual paper-card filename is still chosen
+  # by the agent as the method abbreviation.
+  if [[ ! "$url_no_query" =~ ^https?://([^/]+)(/.*)?$ ]]; then
+    echo "Error: Invalid URL format: $arxiv_url" >&2
+    echo "Expected an arXiv URL or http(s)://host/path (e.g. a direct PDF link)." >&2
+    exit 1
+  fi
+  host="${BASH_REMATCH[1]}"
+  path="${BASH_REMATCH[2]:-/}"
+  host="${host#www.}"
+  path="${path%/}"
+  slug="${path##*/}"
+  slug="${slug%.pdf}"
+  if [[ -z "$slug" ]]; then
+    slug="$(printf '%s' "$path" | tr '/' '_')"
+    slug="${slug#_}"
+  fi
+  if [[ -z "$slug" ]]; then
+    slug="index"
   fi
 
-  echo "Error: Invalid arXiv ID in URL: $arxiv_url" >&2
-  exit 1
+  ARXIV_LOG_BASENAME="$(printf '%s_%s' "$host" "$slug" | tr '/' '_' | tr -c '[:alnum:]_.-' '_')"
+  ARXIV_LOG_BASENAME="${ARXIV_LOG_BASENAME##_}"
+  ARXIV_LOG_BASENAME="${ARXIV_LOG_BASENAME%%_}"
+  if [[ -z "$ARXIV_LOG_BASENAME" ]]; then
+    echo "Error: Could not derive log basename from URL: $arxiv_url" >&2
+    exit 1
+  fi
+  ARXIV_ID=""
+  IS_ARXIV=0
+  return 0
 }
 
 case "$TIMEOUT_SECONDS" in
@@ -90,16 +123,24 @@ SESSION_NAME="new_paper_${ENGINE}_${SESSION_SAFE_ID}_${RUN_ID}_$$"
 cd "$REPO_DIR"
 touch "$START_MARKER"
 
+if (( IS_ARXIV )); then
+  SOURCE_NOTE="This is an arXiv URL. Fetch the arXiv page (and project website if one exists). Prefer figures from the arXiv HTML page (https://arxiv.org/html/<ID>); if extraction is hard, fetch the arXiv source tarball and inspect \\includegraphics targets or LaTeX table source."
+else
+  SOURCE_NOTE="This is a NON-arXiv URL (likely a direct PDF or a project page). There is no arXiv ID, no arXiv HTML page, and no arXiv source tarball to fall back on. Fetch the URL directly. For figures, extract them from the PDF / page itself; if a GitHub repo or project website is referenced from the paper, you may pull figures from there too. Skip any instructions below that assume arXiv-specific resources."
+fi
+
 PROMPT="
 Generate a paper card for this paper: $ARXIV_URL
+
+$SOURCE_NOTE
 
 IMPORTANT: You are running in fully automated non-interactive mode. All tool permissions are pre-approved. Do NOT ask for permission or wait for approval — just call the tools directly (Read, Write, Edit, Glob, Grep, Bash, WebFetch, etc.). Proceed through every step without stopping.
 
 Follow the 6-step workflow in MEMORY.md exactly:
 
-1. Fetch the arXiv page (and project website if one exists) to determine the method name, GitHub repo URL, and project website URL.
+1. Fetch the source page to determine the method name, GitHub repo URL, and project website URL. If this is an arXiv paper, also record the arXiv ID; otherwise put the source URL in the frontmatter \`arxiv:\` field as-is (or leave it empty and use a separate field — pick what reads best).
 
-2. Retrieve figures from the arXiv HTML page (https://arxiv.org/html/<ID>), project website, GitHub repo, or another first-party source. PREFER FIGURES OVER PROSE: include EVERY figure that meaningfully conveys the authors' idea — the method/architecture diagram, key result plots, important ablations, and informative visualizations. Do not stop at one figure if more are useful. Save them to assets/<method>_fig.png, assets/<method>_fig2.png, assets/<method>_fig3.png, ... and embed each one inline with the section it illustrates using standard Markdown: ![](../assets/<method>_fig.png). Place figures next to the prose they explain, not all at the top. Skip purely decorative or branding images. Do NOT use Obsidian ![[embed]] syntax — GitHub does not render it. Do not create synthetic summary screenshots; if a direct asset is unavailable, take a clean crop of the original paper figure. If a figure is hosted in a GitHub repo, prefer the GitHub connector file API with base64 content and decode it locally into assets/; do not rely on raw GitHub curl downloads unless shell network access has already been verified. If screenshotting / extraction is difficult, fetch the arXiv source and inspect figure file paths / \\includegraphics targets.
+2. Retrieve figures from the best available first-party source. PREFER FIGURES OVER PROSE: include EVERY figure that meaningfully conveys the authors' idea — the method/architecture diagram, key result plots, important ablations, and informative visualizations. Do not stop at one figure if more are useful. Save them to assets/<method>_fig.png, assets/<method>_fig2.png, assets/<method>_fig3.png, ... and embed each one inline with the section it illustrates using standard Markdown: ![](../assets/<method>_fig.png). Place figures next to the prose they explain, not all at the top. Skip purely decorative or branding images. Do NOT use Obsidian ![[embed]] syntax — GitHub does not render it. Do not create synthetic summary screenshots; if a direct asset is unavailable, take a clean crop of the original paper figure. If a figure is hosted in a GitHub repo, prefer the GitHub connector file API with base64 content and decode it locally into assets/; do not rely on raw GitHub curl downloads unless shell network access has already been verified. If screenshotting / extraction is difficult, fetch the arXiv source and inspect figure file paths / \\includegraphics targets.
 
 3. Create papers/<method>.md using templates/paper_card_template.md as the starting point. The filename must be the lowercase method abbreviation, but the H1 title line inside the card must be the paper's ORIGINAL TITLE exactly as on arXiv (including any subtitle after the colon), NOT the method abbreviation. Example: filename wino.md, H1 '# Wide-In, Narrow-Out: Revokable Decoding for Efficient and Effective DLLMs'. The card must focus on technical details useful for reproduction — skip abstract-level story-telling. PRIORITIZE FIGURES AND TABLES OVER LONG PROSE: if a method diagram or results plot shows it clearly, lean on the figure and use prose only to add what the figure cannot convey (precise quantities, hyperparameters, formulas, caveats). Replace what would be multi-paragraph verbal explanations with a figure plus a 1-3 sentence caption. Include: core algorithmic steps, training/inference details (loss, optimizer, key hyperparameters, dataset), and key quantitative results with exact benchmark names and numbers. Present results as Markdown tables whenever possible. If table extraction is hard, fetch the arXiv source and use the LaTeX table source to reconstruct the tables; you may also save a clean screenshot of the original table to assets/<method>_table1.png, etc. Whenever a reconstructed table contains notation, symbols, abbreviations, or column/row headers that are not self-explanatory (e.g. †, ‡, *, †*, A→B, subscripts/superscripts, method variants, metric abbreviations), ALWAYS add a short caption or legend directly below the table explaining every such notation. Do not copy a table with unexplained symbols — if the original paper defines them in a caption or footnote, reproduce that explanation; if the paper does not define them, infer from context and note the inference.
 
@@ -129,7 +170,11 @@ CLAUDE_EFFORT="medium"
   printf '\n'
   printf '%s\n' "$RUN_LOG_MARKER"
   printf 'Started at: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
-  printf 'Starting paper card generation for: %s (engine: %s, arXiv ID: %s, model: %s, effort: %s)\n' "$ARXIV_URL" "$ENGINE" "$ARXIV_ID" "$CLAUDE_MODEL" "$CLAUDE_EFFORT"
+  if (( IS_ARXIV )); then
+    printf 'Starting paper card generation for: %s (engine: %s, arXiv ID: %s, model: %s, effort: %s)\n' "$ARXIV_URL" "$ENGINE" "$ARXIV_ID" "$CLAUDE_MODEL" "$CLAUDE_EFFORT"
+  else
+    printf 'Starting paper card generation for: %s (engine: %s, source: non-arXiv URL, model: %s, effort: %s)\n' "$ARXIV_URL" "$ENGINE" "$CLAUDE_MODEL" "$CLAUDE_EFFORT"
+  fi
 } | tee -a "$LOG_FILE"
 echo "Log: $LOG_FILE"
 echo "Status: $STATUS_FILE"

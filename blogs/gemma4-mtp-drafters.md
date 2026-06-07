@@ -3,10 +3,10 @@ tags:
   - SPEC_DECODING
   - MLSYS
 url: https://blog.google/innovation-and-ai/technology/developers-tools/multi-token-prediction-gemma-4/
-author: "Olivier Lacombe, Maarten Grootendorst"
-site: "Google Blog"
+author: Olivier Lacombe, Maarten Grootendorst
+site: Google Blog
 year: 2026
-read: false
+read: true
 ---
 
 # Accelerating Gemma 4: faster inference with multi-token prediction drafters
